@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>360 QC Review Dashboard</title>
+<link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f7fa;
+    color: #333;
+    padding: 40px 20px;
+    margin: 0;
+  }
+  h2 {
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 30px;
+    text-align: center;
+    letter-spacing: 1.2px;
+  }
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px 30px;
+    margin-bottom: 30px;
+  }
+  .filters label {
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    color: #555;
+    min-width: 150px;
+  }
+  .filters input[type="date"],
+  .filters select {
+    padding: 10px 14px;
+    font-size: 15px;
+    border: 1.8px solid #ccc;
+    border-radius: 6px;
+    transition: border-color 0.3s ease;
+    outline-offset: 2px;
+  }
+  .filters input[type="date"]:focus,
+  .filters select:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 6px rgba(0, 123, 255, 0.4);
+  }
+  button {
+    background-color: #007bff;
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    padding: 12px 25px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    align-self: flex-end;
+    margin-top: 20px;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
+  }
+  button:hover:not(:disabled) {
+    background-color: #0056b3;
+  }
+  button:disabled {
+    background-color: #a3a3a3;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  #table-container {
+    overflow-x: auto;
+    box-shadow: 0 4px 20px rgb(0 0 0 / 0.05);
+    border-radius: 10px;
+    background: #fff;
+    padding: 20px;
+  }
+  table {
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    width: 100%;
+    min-width: 900px;
+    font-size: 14.5px;
+    color: #444;
+  }
+  th, td {
+    padding: 14px 18px;
+    text-align: left;
+    vertical-align: middle;
+    background: #fff;
+    border: none;
+  }
+  th {
+    background-color: #e9f0ff;
+    font-weight: 600;
+    color: #007bff;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  tr:hover td {
+    background-color: #f5faff;
+  }
+  td input[type="text"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1.5px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+  }
+  td input[type="text"]:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+  }
+  a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+  }
+  a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+<h2>360 QC Review Dashboard</h2>
+
+<div class="filters">
+  <label>Start Date: <input type="date" id="startDate" /></label>
+  <label>End Date: <input type="date" id="endDate" /></label>
+  <label>User:
+    <select id="userFilter"><option value="">All</option></select>
+  </label>
+  <label>Enterprise:
+    <select id="enterpriseFilter"><option value="">All</option></select>
+  </label>
+  <div>
+    <button onclick="applyFilters()">Filter</button>
+  </div>
+</div>
+
+<div id="table-container">Loading...</div>
+
+<script>
+  const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vThoeXNovzUYQaHoFqHYY8p4hxrGTJWUPF8dQs0cinxvypfUVwAzFu74l06jhqXm0x611kRke13fa2t/pub?gid=0&single=true&output=csv';
+  const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeQH6R9-rYr1Kh2rwUBKu7uGvJAkRrvx8fnxF6jfkac7sNL2A/formResponse';
+
+  let globalData = [];
+  let filteredData = [];
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    return text.replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function escapeHtmlAttr(text) {
+    if (!text) return '';
+    return text.replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function loadAndFilterCSV() {
+    fetch(CSV_URL)
+      .then(res => res.text())
+      .then(csv => {
+        Papa.parse(csv, {
+          header: true,
+          skipEmptyLines: true,
+          transformHeader: h => h.trim(),
+          complete: results => {
+            globalData = results.data;
+            populateDropdowns();
+            applyFilters();
+          },
+          error: err => {
+            document.getElementById('table-container').innerText = 'Error loading data.';
+            console.error('CSV load error:', err);
+          }
+        });
+      })
+      .catch(err => {
+        document.getElementById('table-container').innerText = 'Error fetching CSV.';
+        console.error('Fetch error:', err);
+      });
+  }
+
+  function populateDropdowns() {
+    const userSet = new Set(), entSet = new Set();
+    globalData.forEach(row => {
+      if (row['User']) userSet.add(row['User']);
+      if (row['Enterprise']) entSet.add(row['Enterprise']);
+    });
+    document.getElementById('userFilter').innerHTML =
+      '<option value="">All</option>' +
+      [...userSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
+    document.getElementById('enterpriseFilter').innerHTML =
+      '<option value="">All</option>' +
+      [...entSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
+  }
+
+  function applyFilters() {
+    const start = document.getElementById('startDate').value;
+    const end = document.getElementById('endDate').value;
+    const user = document.getElementById('userFilter').value;
+    const ent = document.getElementById('enterpriseFilter').value;
+
+    filteredData = globalData.filter(row => {
+      if (!row['User']) return false;
+      const rawDate = row['Date'] ? row['Date'].split('T')[0].trim() : '';
+      if (!rawDate) return false;
+      if (start && rawDate < start) return false;
+      if (end && rawDate > end) return false;
+      if (user && (!row['User'] || row['User'].trim().toLowerCase() !== user.trim().toLowerCase())) return false;
+      if (ent && (!row['Enterprise'] || row['Enterprise'].trim().toLowerCase() !== ent.trim().toLowerCase())) return false;
+      return true;
+    });
+
+    renderTable(filteredData);
+  }
+
+  function renderTable(data) {
+    if (!data.length) {
+      document.getElementById('table-container').innerHTML = 'No matching data.';
+      return;
+    }
+
+    let html = `<table id="qc-table"><tr>
+      <th>Spin_ID</th><th>SKU_ID</th><th>Issues</th><th>Enterprise</th><th>User</th><th>Spin URL</th>
+      <th>Comment</th><th>Submit</th></tr>`;
+
+    data.forEach((row, i) => {
+      const spinId = escapeHtml(row['Spin_ID'] || '');
+      const skuId = escapeHtml(row['SKU_ID'] || '');
+      const enterprise = escapeHtml(row['Enterprise'] || '');
+      const user = escapeHtml(row['User'] || '');
+      const spinURL = row['spin_url'] || '';
+      const issuesHtml = escapeHtml(row['Issues'] || '').replace(/\n/g, '<br>');
+
+      html += `<tr>
+        <td>${spinId}</td>
+        <td>${skuId}</td>
+        <td>${issuesHtml}</td>
+        <td>${enterprise}</td>
+        <td>${user}</td>
+        <td><a href="${spinURL}" target="_blank" rel="noopener noreferrer">Link</a></td>
+        <td><input type="text" id="comment_${i}" /></td>
+        <td><button onclick="submitFormRow(${i})" id="btn_${i}">Submit</button></td>
+      </tr>`;
+    });
+
+    html += '</table>';
+    document.getElementById('table-container').innerHTML = html;
+  }
+
+  function submitFormRow(i) {
+    try {
+      const row = filteredData[i];
+      const spinId = escapeHtmlAttr(row['Spin_ID'] || '');
+      const skuId = escapeHtmlAttr(row['SKU_ID'] || '');
+      const enterprise = escapeHtmlAttr(row['Enterprise'] || '');
+      const user = escapeHtmlAttr(row['User'] || '');
+      const issue = escapeHtmlAttr(row['Issues'] || '');
+      const comment = escapeHtmlAttr(document.getElementById(`comment_${i}`).value);
+      const spinUrl = escapeHtmlAttr(row['spin_url'] || '');
+
+      const form = document.createElement("form");
+      form.action = FORM_URL;
+      form.method = "POST";
+      form.target = "hidden_iframe";
+      form.style.display = "none";
+
+      form.innerHTML = `
+        <input name="entry.1125049159" value="${spinId}">
+        <input name="entry.703277665" value="${skuId}">
+        <input name="entry.1815472287" value="${enterprise}">
+        <input name="entry.582537694" value="${user}">
+        <input name="entry.575622617" value="${issue}">
+        <input name="entry.1751143375" value="${comment}">
+        <input name="entry.1372347436" value="${spinUrl}">
+      `;
+
+      const iframe = document.getElementsByName('hidden_iframe')[0];
+      if (iframe) {
+        iframe.onload = function() {
+          console.log('Submission successful for row:', i);
+          const btn = document.getElementById(`btn_${i}`);
+          if (btn) {
+            btn.disabled = true;
+            btn.innerText = "Submitted";
+          }
+        };
+      }
+
+      document.body.appendChild(form);
+      console.log('Submitting form for row:', i);
+      form.submit();
+      document.body.removeChild(form);
+    } catch (error) {
+      console.error('Error submitting form row', i, error);
+    }
+  }
+
+  window.onload = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const lastWeek = new Date();
+    lastWeek.setDate(lastWeek.getDate() - 7);
+    document.getElementById('endDate').value = today;
+    document.getElementById('startDate').value = lastWeek.toISOString().split('T')[0];
+    loadAndFilterCSV();
+  };
+</script>
+
+<iframe name="hidden_iframe" style="display:none;"></iframe>
+
+</body>
+</html>

@@ -6,7 +6,6 @@
 <link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <style>
-  /* BODY AND BASE */
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f4f7fa;
@@ -21,8 +20,6 @@
     text-align: center;
     letter-spacing: 1.2px;
   }
-
-  /* FILTERS */
   .filters {
     display: flex;
     flex-wrap: wrap;
@@ -72,8 +69,6 @@
     cursor: not-allowed;
     box-shadow: none;
   }
-
-  /* TABLE */
   #table-container {
     overflow-x: auto;
     box-shadow: 0 4px 20px rgb(0 0 0 / 0.05);
@@ -163,6 +158,17 @@
     border: none;
     background: none;
   }
+  #modalIssues {
+    padding: 15px 20px;
+    background: #fff9e6;
+    color: #8a6d00;
+    font-size: 16px;
+    font-weight: 600;
+    border-bottom: 1px solid #f5e1a4;
+    max-height: 100px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
   #modalIframe {
     flex: 1;
     border: none;
@@ -221,6 +227,7 @@
       <div>Spin Viewer</div>
       <button id="closeModal" title="Close">&times;</button>
     </div>
+    <div id="modalIssues"></div>
     <iframe id="modalIframe" src=""></iframe>
     <div id="modalFooter">
       <textarea id="modalComment" placeholder="Enter your comment here..."></textarea>
@@ -346,6 +353,11 @@
     const url = row['spin_url'];
     if (!url) return alert('Spin URL not available');
     document.getElementById('modalIframe').src = url;
+
+    // Show issues text on top
+    const issuesText = row['Issues'] || 'No issues reported.';
+    document.getElementById('modalIssues').textContent = issuesText;
+
     document.getElementById('modalComment').value = '';
     document.getElementById('modal').style.display = 'flex';
   }

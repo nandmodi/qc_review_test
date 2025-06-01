@@ -6,7 +6,6 @@
 <link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <style>
-  /* ... existing styles unchanged ... */
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f4f7fa;
@@ -24,9 +23,14 @@
   .filters {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-start;  /* Align items to start */
+    align-items: flex-end;        /* Align inputs and button to baseline */
     gap: 20px 30px;
     margin-bottom: 30px;
+  }
+  .filters > div {
+    display: flex;
+    align-items: center;
   }
   .filters label {
     display: flex;
@@ -35,14 +39,15 @@
     color: #555;
     min-width: 140px;
   }
-  .filters input[type="date"],
-  .filters select {
+  .filters label input,
+  .filters label select {
     padding: 10px 14px;
     font-size: 15px;
     border: 1.8px solid #ccc;
     border-radius: 6px;
     transition: border-color 0.3s ease;
     outline-offset: 2px;
+    margin-bottom: 4px; /* Vertical spacing for better alignment */
   }
   .filters input[type="date"]:focus,
   .filters select:focus {
@@ -50,7 +55,8 @@
     outline: none;
     box-shadow: 0 0 6px rgba(0, 123, 255, 0.4);
   }
-  button {
+  .filters > div button {
+    margin-top: 22px; /* Align button vertically with inputs */
     background-color: #007bff;
     border: none;
     color: #fff;
@@ -62,10 +68,10 @@
     transition: background-color 0.3s ease;
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
   }
-  button:hover:not(:disabled) {
+  .filters > div button:hover:not(:disabled) {
     background-color: #0056b3;
   }
-  button:disabled {
+  .filters > div button:disabled {
     background-color: #a3a3a3;
     cursor: not-allowed;
     box-shadow: none;
@@ -112,9 +118,9 @@
     color: #0056b3;
   }
 
-  /* Fullscreen modal styles unchanged... */
+  /* FULLSCREEN MODAL */
   #modal {
-    display: none;
+    display: none; /* Hidden by default */
     position: fixed;
     z-index: 10000;
     top: 0; left: 0;

@@ -6,6 +6,7 @@
 <link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <style>
+  /* BODY AND BASE */
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f4f7fa;
@@ -20,6 +21,8 @@
     text-align: center;
     letter-spacing: 1.2px;
   }
+
+  /* FILTERS */
   .filters {
     display: flex;
     flex-wrap: wrap;
@@ -59,8 +62,6 @@
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    align-self: flex-end;
-    margin-top: 20px;
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
   }
   button:hover:not(:disabled) {
@@ -71,6 +72,8 @@
     cursor: not-allowed;
     box-shadow: none;
   }
+
+  /* TABLE */
   #table-container {
     overflow-x: auto;
     box-shadow: 0 4px 20px rgb(0 0 0 / 0.05);
@@ -103,28 +106,80 @@
   tr:hover td {
     background-color: #f5faff;
   }
-  td input[type="text"] {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1.5px solid #ccc;
-    border-radius: 5px;
+  a.link-button {
+    color: #007bff;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+  a.link-button:visited {
+    color: #0056b3;
+  }
+
+  /* MODAL */
+  #modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+  }
+  #modalContent {
+    background: #fff;
+    width: 90%;
+    max-width: 900px;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.25);
+  }
+  #modalHeader {
+    padding: 10px 20px;
+    font-weight: 700;
+    font-size: 18px;
+    color: #007bff;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #closeModal {
+    cursor: pointer;
+    font-size: 22px;
+    font-weight: 700;
+    color: #007bff;
+    border: none;
+    background: none;
+  }
+  #modalIframe {
+    flex: 1;
+    border: none;
+  }
+  #modalFooter {
+    padding: 12px 20px;
+    border-top: 1px solid #ccc;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  #modalFooter textarea {
+    flex: 1;
+    resize: vertical;
+    min-height: 50px;
     font-size: 14px;
+    padding: 8px 10px;
+    border-radius: 5px;
+    border: 1.5px solid #ccc;
     transition: border-color 0.3s ease;
   }
-  td input[type="text"]:focus {
+  #modalFooter textarea:focus {
     border-color: #007bff;
     outline: none;
     box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
-  }
-  a {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.3s ease;
-  }
-  a:hover {
-    color: #0056b3;
-    text-decoration: underline;
   }
 </style>
 </head>
@@ -148,29 +203,37 @@
 
 <div id="table-container">Loading...</div>
 
+<!-- Modal -->
+<div id="modal">
+  <div id="modalContent">
+    <div id="modalHeader">
+      <div>Spin Viewer</div>
+      <button id="closeModal" title="Close">&times;</button>
+    </div>
+    <iframe id="modalIframe" src=""></iframe>
+    <div id="modalFooter">
+      <textarea id="modalComment" placeholder="Enter your comment here..."></textarea>
+      <button id="modalSubmitBtn">Submit</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vThoeXNovzUYQaHoFqHYY8p4hxrGTJWUPF8dQs0cinxvypfUVwAzFu74l06jhqXm0x611kRke13fa2t/pub?gid=0&single=true&output=csv';
   const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeQH6R9-rYr1Kh2rwUBKu7uGvJAkRrvx8fnxF6jfkac7sNL2A/formResponse';
 
   let globalData = [];
   let filteredData = [];
+  let currentModalIndex = null;
 
   function escapeHtml(text) {
     if (!text) return '';
-    return text.replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
   function escapeHtmlAttr(text) {
     if (!text) return '';
-    return text.replace(/&/g, "&amp;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
+    return text.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
   function loadAndFilterCSV() {
@@ -205,11 +268,9 @@
       if (row['Enterprise']) entSet.add(row['Enterprise']);
     });
     document.getElementById('userFilter').innerHTML =
-      '<option value="">All</option>' +
-      [...userSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
+      '<option value="">All</option>' + [...userSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
     document.getElementById('enterpriseFilter').innerHTML =
-      '<option value="">All</option>' +
-      [...entSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
+      '<option value="">All</option>' + [...entSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
   }
 
   function applyFilters() {
@@ -240,7 +301,7 @@
 
     let html = `<table id="qc-table"><tr>
       <th>Spin_ID</th><th>SKU_ID</th><th>Issues</th><th>Enterprise</th><th>User</th><th>Spin URL</th>
-      <th>Comment</th><th>Submit</th></tr>`;
+    </tr>`;
 
     data.forEach((row, i) => {
       const spinId = escapeHtml(row['Spin_ID'] || '');
@@ -250,15 +311,17 @@
       const spinURL = row['spin_url'] || '';
       const issuesHtml = escapeHtml(row['Issues'] || '').replace(/\n/g, '<br>');
 
+      const submitted = row._submitted || false;
+      const linkClass = submitted ? 'link-button disabled' : 'link-button';
+      const linkStyle = submitted ? 'pointer-events:none; color:gray; text-decoration:none;' : '';
+
       html += `<tr>
         <td>${spinId}</td>
         <td>${skuId}</td>
         <td>${issuesHtml}</td>
         <td>${enterprise}</td>
         <td>${user}</td>
-        <td><a href="${spinURL}" target="_blank" rel="noopener noreferrer">Link</a></td>
-        <td><input type="text" id="comment_${i}" /></td>
-        <td><button onclick="submitFormRow(${i})" id="btn_${i}">Submit</button></td>
+        <td><a class="${linkClass}" style="${linkStyle}" onclick="openModal(${i})" title="View Spin" href="javascript:void(0)">View Spin</a></td>
       </tr>`;
     });
 
@@ -266,7 +329,34 @@
     document.getElementById('table-container').innerHTML = html;
   }
 
-  function submitFormRow(i) {
+  function openModal(i) {
+    currentModalIndex = i;
+    const row = filteredData[i];
+    const url = row['spin_url'];
+    if (!url) return alert('Spin URL not available');
+    document.getElementById('modalIframe').src = url;
+    document.getElementById('modalComment').value = '';
+    document.getElementById('modal').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+    document.getElementById('modalIframe').src = '';
+  }
+
+  document.getElementById('closeModal').addEventListener('click', closeModal);
+
+  document.getElementById('modalSubmitBtn').addEventListener('click', () => {
+    if (currentModalIndex === null) return;
+    const comment = document.getElementById('modalComment').value.trim();
+    if (!comment) {
+      alert('Please enter a comment before submitting.');
+      return;
+    }
+    submitFormRow(currentModalIndex, comment);
+  });
+
+  function submitFormRow(i, commentValue) {
     try {
       const row = filteredData[i];
       const spinId = escapeHtmlAttr(row['Spin_ID'] || '');
@@ -274,7 +364,7 @@
       const enterprise = escapeHtmlAttr(row['Enterprise'] || '');
       const user = escapeHtmlAttr(row['User'] || '');
       const issue = escapeHtmlAttr(row['Issues'] || '');
-      const comment = escapeHtmlAttr(document.getElementById(`comment_${i}`).value);
+      const comment = escapeHtmlAttr(commentValue || '');
       const spinUrl = escapeHtmlAttr(row['spin_url'] || '');
 
       const form = document.createElement("form");
@@ -295,13 +385,11 @@
 
       const iframe = document.getElementsByName('hidden_iframe')[0];
       if (iframe) {
-        iframe.onload = function() {
+        iframe.onload = function () {
           console.log('Submission successful for row:', i);
-          const btn = document.getElementById(`btn_${i}`);
-          if (btn) {
-            btn.disabled = true;
-            btn.innerText = "Submitted";
-          }
+          filteredData[i]._submitted = true;
+          renderTable(filteredData);
+          closeModal();
         };
       }
 

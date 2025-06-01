@@ -354,7 +354,6 @@
     if (!url) return alert('Spin URL not available');
     document.getElementById('modalIframe').src = url;
 
-    // Show issues text on top
     const issuesText = row['Issues'] || 'No issues reported.';
     document.getElementById('modalIssues').textContent = issuesText;
 

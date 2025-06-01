@@ -6,6 +6,7 @@
 <link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <style>
+  /* Basic styling */
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f4f7fa;
@@ -111,9 +112,9 @@
     color: #0056b3;
   }
 
-  /* FULLSCREEN MODAL */
+  /* Fullscreen modal styling */
   #modal {
-    display: none; /* Modal hidden by default */
+    display: none; /* Hidden by default */
     position: fixed;
     z-index: 10000;
     top: 0; left: 0;
@@ -408,7 +409,6 @@
       const iframe = document.getElementsByName('hidden_iframe')[0];
       if (iframe) {
         iframe.onload = function () {
-          console.log('Submission successful for row:', i);
           filteredData[i]._submitted = true;
           renderTable(filteredData);
           closeModal();
@@ -416,7 +416,6 @@
       }
 
       document.body.appendChild(form);
-      console.log('Submitting form for row:', i);
       form.submit();
       document.body.removeChild(form);
     } catch (error) {

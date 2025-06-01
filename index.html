@@ -6,7 +6,6 @@
 <link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <style>
-  /* Basic styling */
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f4f7fa;
@@ -112,7 +111,7 @@
     color: #0056b3;
   }
 
-  /* Fullscreen modal styling */
+  /* FULLSCREEN MODAL */
   #modal {
     display: none; /* Hidden by default */
     position: fixed;
@@ -319,10 +318,11 @@
     }
 
     let html = `<table id="qc-table"><tr>
-      <th>Spin_ID</th><th>SKU_ID</th><th>Issues</th><th>Enterprise</th><th>User</th><th>Spin URL</th>
+      <th>Date</th><th>Spin_ID</th><th>SKU_ID</th><th>Issues</th><th>Enterprise</th><th>User</th><th>Spin URL</th>
     </tr>`;
 
     data.forEach((row, i) => {
+      const dateVal = escapeHtml(row['Date'] ? row['Date'].split('T')[0].trim() : '');
       const spinId = escapeHtml(row['Spin_ID'] || '');
       const skuId = escapeHtml(row['SKU_ID'] || '');
       const enterprise = escapeHtml(row['Enterprise'] || '');
@@ -335,6 +335,7 @@
       const linkStyle = submitted ? 'pointer-events:none; color:gray; text-decoration:none;' : '';
 
       html += `<tr>
+        <td>${dateVal}</td>
         <td>${spinId}</td>
         <td>${skuId}</td>
         <td>${issuesHtml}</td>

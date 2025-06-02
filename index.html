@@ -4,7 +4,12 @@
 <meta charset="UTF-8" />
 <title>360 QC Review Dashboard</title>
 <link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
+
+<!-- Choices.js CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
 <style>
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -118,7 +123,7 @@
     color: #0056b3;
   }
 
-  /* Fullscreen modal */
+  /* FULLSCREEN MODAL */
   #modal {
     display: none;
     position: fixed;
@@ -215,13 +220,13 @@
   <label>Start Date: <input type="date" id="startDate" /></label>
   <label>End Date: <input type="date" id="endDate" /></label>
   <label>User:
-    <select id="userFilter" multiple size="4"></select>
+    <select id="userFilter" placeholder="Select User(s)"></select>
   </label>
   <label>Enterprise:
-    <select id="enterpriseFilter" multiple size="4"></select>
+    <select id="enterpriseFilter" placeholder="Select Enterprise(s)"></select>
   </label>
   <label>Issue:
-    <select id="issueFilter" multiple size="5">
+    <select id="issueFilter" placeholder="Select Issue(s)">
       <option value="nullblank">Null/Blank</option>
       <option value="blocker">Blocker</option>
       <option value="high">High</option>
@@ -251,6 +256,12 @@
   </div>
 </div>
 
+<!-- Choices.js CSS and JS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
 <script>
   const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vThoeXNovzUYQaHoFqHYY8p4hxrGTJWUPF8dQs0cinxvypfUVwAzFu74l06jhqXm0x611kRke13fa2t/pub?gid=0&single=true&output=csv';
   const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeQH6R9-rYr1Kh2rwUBKu7uGvJAkRrvx8fnxF6jfkac7sNL2A/formResponse';
@@ -258,6 +269,9 @@
   let globalData = [];
   let filteredData = [];
   let currentModalIndex = null;
+
+  // Choices.js instances
+  let userChoice, enterpriseChoice, issueChoice;
 
   function escapeHtml(text) {
     if (!text) return '';
@@ -269,9 +283,9 @@
     return text.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
-  function getSelectedValues(selectId) {
-    const select = document.getElementById(selectId);
-    return Array.from(select.selectedOptions).map(opt => opt.value.toLowerCase().trim());
+  function getSelectedValues(choiceInstance) {
+    // Returns array of selected values lowercased trimmed
+    return choiceInstance.getValue(true).map(v => v.toLowerCase().trim());
   }
 
   function loadAndFilterCSV() {
@@ -305,18 +319,38 @@
       if (row['User']) userSet.add(row['User']);
       if (row['Enterprise']) entSet.add(row['Enterprise']);
     });
-    document.getElementById('userFilter').innerHTML =
-      [...userSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
-    document.getElementById('enterpriseFilter').innerHTML =
-      [...entSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
+
+    // Populate plain selects (Choices will enhance)
+    const userSelect = document.getElementById('userFilter');
+    userSelect.innerHTML = [...userSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
+    const entSelect = document.getElementById('enterpriseFilter');
+    entSelect.innerHTML = [...entSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
+
+    // Initialize or update Choices.js
+    if (!userChoice) {
+      userChoice = new Choices(userSelect, { removeItemButton: true, placeholderValue: 'Select User(s)' });
+    } else {
+      userChoice.setChoices([...userSet].map(v => ({ value: v, label: v })), 'value', 'label', true);
+    }
+
+    if (!enterpriseChoice) {
+      enterpriseChoice = new Choices(entSelect, { removeItemButton: true, placeholderValue: 'Select Enterprise(s)' });
+    } else {
+      enterpriseChoice.setChoices([...entSet].map(v => ({ value: v, label: v })), 'value', 'label', true);
+    }
+
+    // Issue select is static, initialize once
+    if (!issueChoice) {
+      issueChoice = new Choices('#issueFilter', { removeItemButton: true, placeholderValue: 'Select Issue(s)' });
+    }
   }
 
   function applyFilters() {
     const start = document.getElementById('startDate').value;
     const end = document.getElementById('endDate').value;
-    const users = getSelectedValues('userFilter');
-    const ents = getSelectedValues('enterpriseFilter');
-    const issues = getSelectedValues('issueFilter');
+    const users = getSelectedValues(userChoice);
+    const ents = getSelectedValues(enterpriseChoice);
+    const issues = getSelectedValues(issueChoice);
 
     filteredData = globalData.filter(row => {
       if (!row['User']) return false;
@@ -469,6 +503,10 @@
   }
 
   window.onload = () => {
+    userChoice = new Choices('#userFilter', { removeItemButton: true, placeholderValue: 'Select User(s)' });
+    enterpriseChoice = new Choices('#enterpriseFilter', { removeItemButton: true, placeholderValue: 'Select Enterprise(s)' });
+    issueChoice = new Choices('#issueFilter', { removeItemButton: true, placeholderValue: 'Select Issue(s)' });
+
     const today = new Date().toISOString().split('T')[0];
     const lastWeek = new Date();
     lastWeek.setDate(lastWeek.getDate() - 7);
@@ -477,6 +515,10 @@
     loadAndFilterCSV();
   };
 </script>
+
+<!-- Choices.js -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
 <iframe name="hidden_iframe" style="display:none;"></iframe>
 

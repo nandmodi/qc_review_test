@@ -345,6 +345,7 @@
       if (start && rawDate < start) return false;
       if (end && rawDate > end) return false;
 
+      // OR logic within filter category: include row if its value is in selected list OR if no selection, include all
       if (users.length > 0 && !users.includes((row['User'] || '').toLowerCase().trim())) return false;
       if (ents.length > 0 && !ents.includes((row['Enterprise'] || '').toLowerCase().trim())) return false;
 
@@ -499,6 +500,9 @@
     loadAndFilterCSV();
   };
 </script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
 <iframe name="hidden_iframe" style="display:none;"></iframe>
 

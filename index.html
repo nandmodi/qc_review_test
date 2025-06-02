@@ -23,8 +23,8 @@
   .filters {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-start;  /* Align items to start */
-    align-items: flex-end;        /* Align inputs and button to baseline */
+    justify-content: flex-start;
+    align-items: flex-end;
     gap: 20px 30px;
     margin-bottom: 30px;
   }
@@ -47,7 +47,7 @@
     border-radius: 6px;
     transition: border-color 0.3s ease;
     outline-offset: 2px;
-    margin-bottom: 4px; /* Vertical spacing for better alignment */
+    margin-bottom: 4px;
   }
   .filters input[type="date"]:focus,
   .filters select:focus {
@@ -56,7 +56,7 @@
     box-shadow: 0 0 6px rgba(0, 123, 255, 0.4);
   }
   .filters > div button {
-    margin-top: 22px; /* Align button vertically with inputs */
+    margin-top: 22px;
     background-color: #007bff;
     border: none;
     color: #fff;
@@ -118,9 +118,9 @@
     color: #0056b3;
   }
 
-  /* FULLSCREEN MODAL */
+  /* Fullscreen modal */
   #modal {
-    display: none; /* Hidden by default */
+    display: none;
     position: fixed;
     z-index: 10000;
     top: 0; left: 0;
@@ -215,14 +215,13 @@
   <label>Start Date: <input type="date" id="startDate" /></label>
   <label>End Date: <input type="date" id="endDate" /></label>
   <label>User:
-    <select id="userFilter"><option value="">All</option></select>
+    <select id="userFilter" multiple size="4"></select>
   </label>
   <label>Enterprise:
-    <select id="enterpriseFilter"><option value="">All</option></select>
+    <select id="enterpriseFilter" multiple size="4"></select>
   </label>
   <label>Issue:
-    <select id="issueFilter">
-      <option value="">All</option>
+    <select id="issueFilter" multiple size="5">
       <option value="nullblank">Null/Blank</option>
       <option value="blocker">Blocker</option>
       <option value="high">High</option>
@@ -270,6 +269,11 @@
     return text.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
+  function getSelectedValues(selectId) {
+    const select = document.getElementById(selectId);
+    return Array.from(select.selectedOptions).map(opt => opt.value.toLowerCase().trim());
+  }
+
   function loadAndFilterCSV() {
     fetch(CSV_URL)
       .then(res => res.text())
@@ -302,17 +306,17 @@
       if (row['Enterprise']) entSet.add(row['Enterprise']);
     });
     document.getElementById('userFilter').innerHTML =
-      '<option value="">All</option>' + [...userSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
+      [...userSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
     document.getElementById('enterpriseFilter').innerHTML =
-      '<option value="">All</option>' + [...entSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
+      [...entSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
   }
 
   function applyFilters() {
     const start = document.getElementById('startDate').value;
     const end = document.getElementById('endDate').value;
-    const user = document.getElementById('userFilter').value.toLowerCase();
-    const ent = document.getElementById('enterpriseFilter').value.toLowerCase();
-    const issueFilter = document.getElementById('issueFilter').value.toLowerCase();
+    const users = getSelectedValues('userFilter');
+    const ents = getSelectedValues('enterpriseFilter');
+    const issues = getSelectedValues('issueFilter');
 
     filteredData = globalData.filter(row => {
       if (!row['User']) return false;
@@ -320,15 +324,29 @@
       if (!rawDate) return false;
       if (start && rawDate < start) return false;
       if (end && rawDate > end) return false;
-      if (user && (!row['User'] || row['User'].toLowerCase() !== user)) return false;
-      if (ent && (!row['Enterprise'] || row['Enterprise'].toLowerCase() !== ent)) return false;
 
-      const issues = (row['Issues'] || '').toLowerCase().trim();
+      if (users.length > 0 && !users.includes((row['User'] || '').toLowerCase().trim())) return false;
+      if (ents.length > 0 && !ents.includes((row['Enterprise'] || '').toLowerCase().trim())) return false;
 
-      if (issueFilter === 'nullblank') {
-        if (issues.length > 0) return false;
-      } else if (issueFilter && issueFilter !== '') {
-        if (!issues.includes(issueFilter)) return false;
+      const rowIssues = (row['Issues'] || '').toLowerCase().trim();
+
+      if (issues.length > 0) {
+        if (issues.includes('nullblank')) {
+          if (rowIssues.length > 0) {
+            // Only include if other issues selected and row matches any of those
+            const otherIssues = issues.filter(i => i !== 'nullblank');
+            if (otherIssues.length > 0) {
+              const matchOther = otherIssues.some(i => rowIssues.includes(i));
+              if (!matchOther) return false;
+            } else {
+              return false;
+            }
+          }
+          // else rowIssues empty, include row
+        } else {
+          const match = issues.some(i => rowIssues.includes(i));
+          if (!match) return false;
+        }
       }
 
       return true;

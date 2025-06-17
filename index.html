@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
   <title>QC Form Submit</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
@@ -16,6 +15,7 @@
     img { max-width: 100%; max-height: 80%; }
     .controls { margin: 20px; }
     .status-group { margin-top: 20px; }
+    iframe { display: none; }
   </style>
 </head>
 <body>
@@ -43,10 +43,12 @@
   <button onclick="submitForm()">Next</button>
 </div>
 
+<iframe id="hiddenSubmitFrame" name="hiddenSubmitFrame"></iframe>
+
 <script>
   const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQc6Bd5VEE067t02ubbCE_rAYzgOEN9ggvB8uH28TQKldJ5qGePkdSQeYbdvpbhl3lwb1yIhAr8685B/pub?gid=0&single=true&output=csv";
 
-  const formBaseURL = "https://docs.google.com/forms/d/e/1FAIpQLSfAcGmJXwfrNV1xLUHNEYGRw7I4ErTNH5n6GhUltxDcAH008w/viewform?usp=pp_url";
+  const formBaseURL = "https://docs.google.com/forms/d/e/1FAIpQLSfAcGmJXwfrNV1xLUHNEYGRw7I4ErTNH5n6GhUltxDcAH008w/formResponse";
 
   const entries = {
     image_id: "entry.331138758",
@@ -92,13 +94,23 @@
     }
 
     const row = data[currentIndex];
-    const url = `${formBaseURL}&${entries.image_id}=${encodeURIComponent(row.image_id)}&${entries.sku_id}=${encodeURIComponent(row.sku_id)}&${entries.status}=${encodeURIComponent(status)}`;
 
-    window.open(url, "_blank");
+    const formParams = new URLSearchParams();
+    formParams.append(entries.image_id, row.image_id);
+    formParams.append(entries.sku_id, row.sku_id);
+    formParams.append(entries.status, status);
 
-    currentIndex++;
-    showImage();
-    clearStatus();
+    const formAction = `${formBaseURL}?${formParams.toString()}`;
+
+    const iframe = document.getElementById("hiddenSubmitFrame");
+    iframe.src = formAction;
+
+    // After 2 seconds, show next image
+    setTimeout(() => {
+      currentIndex++;
+      showImage();
+      clearStatus();
+    }, 2000);
   }
 
   function clearStatus() {

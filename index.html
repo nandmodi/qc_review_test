@@ -1,59 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>QC Tool</title>
-  <link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
+  <meta charset="UTF-8">
+  <title>QC Form Submit</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin: 0; }
-    .container { display: flex; height: 80vh; border: 1px solid black; }
-    .image-box { flex: 1; border-right: 1px solid black; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
-    .image-box:last-child { border-right: none; }
-    .image-label { font-weight: bold; margin-bottom: 10px; }
-    img { max-width: 100%; max-height: 90%; object-fit: contain; }
-    .buttons { display: flex; justify-content: space-evenly; align-items: center; padding: 10px; border-top: 1px solid black; }
-    label { font-size: 16px; margin: 0 10px; }
-    button { padding: 10px 30px; font-size: 16px; }
+    body { font-family: Arial; text-align: center; margin: 0; }
+    .container { display: flex; height: 80vh; }
+    .image-box { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #000; }
+    img { max-width: 100%; max-height: 80%; }
+    .controls { margin: 20px; }
   </style>
 </head>
 <body>
 
+<h2>Image QC Review</h2>
+
 <div class="container">
   <div class="image-box">
-    <div class="image-label">Input</div>
+    <div><strong>Input Image</strong></div>
     <img id="inputImg" src="" alt="Input Image">
   </div>
   <div class="image-box">
-    <div class="image-label">Output</div>
+    <div><strong>Output Image</strong></div>
     <img id="outputImg" src="" alt="Output Image">
   </div>
 </div>
 
-<div class="buttons">
+<div class="controls">
   <label><input type="radio" name="status" value="Done"> Done</label>
   <label><input type="radio" name="status" value="Rejected"> Rejected</label>
   <label><input type="radio" name="status" value="Editing"> Editing</label>
-  <button onclick="submitAndNext()">Next</button>
+  <br><br>
+  <button onclick="submitForm()">Next</button>
 </div>
 
 <script>
-  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS0zbVXhPDU2OtWzjP33DZ5rJ8k2lAWdlGhrIVX3P3sSEO0RlkuIaXL14lfbBup8VwJfQAmPifprQRf/pub?gid=1257618858&single=true&output=csv";
-  const scriptURL = "https://script.google.com/macros/s/AKfycbxf1jK7VlonuYzMqPaLnU2kgFvYeEhwB30-uGHiPwuG-UerEhahwnt2XZth2y42G9IThQ/exec";
+  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS0zbVXhPDU2OtWzjP33DZ5rJ8k2lAWdlGhrIVX3P3sSEO0RlkuIaXL14lfbBup8VwJfQAmPifprQRf/pub?gid=0&single=true&output=csv";
+
+  const formBaseURL = "https://docs.google.com/forms/d/e/1FAIpQLSfrRmrHKwGRqmps8FVbTWvDoRa0NLE0au-4xiSpoX5cMuM8zw/viewform?usp=pp_url";
+
+  const entries = {
+    image_id: "entry.907872641",
+    sku_id: "entry.1319918485",
+    status: "entry.410426993"
+  };
 
   let data = [];
   let currentIndex = 0;
 
-  function loadCSV() {
-    Papa.parse(csvUrl, {
-      download: true,
-      header: true,
-      complete: function(results) {
-        data = results.data;
-        showImage();
-      }
-    });
-  }
+  Papa.parse(csvUrl, {
+    download: true,
+    header: true,
+    complete: function(results) {
+      data = results.data;
+      showImage();
+    }
+  });
 
   function showImage() {
     if (currentIndex < data.length) {
@@ -61,11 +64,11 @@
       document.getElementById("inputImg").src = row["input_image_hres_url"];
       document.getElementById("outputImg").src = row["output_image_hres_url"];
     } else {
-      alert("✅ End of list");
+      alert("✅ Review complete!");
     }
   }
 
-  function getSelectedStatus() {
+  function getStatus() {
     const radios = document.getElementsByName("status");
     for (let r of radios) {
       if (r.checked) return r.value;
@@ -73,43 +76,27 @@
     return null;
   }
 
-  function submitAndNext() {
-    const status = getSelectedStatus();
+  function submitForm() {
+    const status = getStatus();
     if (!status) {
-      alert("Please select a status before proceeding.");
+      alert("Please select a status.");
       return;
     }
 
-    const payload = {
-      rowIndex: currentIndex + 2, // +2 because Sheets is 1-indexed and has a header row
-      status: status
-    };
+    const row = data[currentIndex];
+    const url = `${formBaseURL}&${entries.image_id}=${encodeURIComponent(row.image_id)}&${entries.sku_id}=${encodeURIComponent(row.sku_id)}&${entries.status}=${encodeURIComponent(status)}`;
 
-    fetch(scriptURL, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-    .then(res => res.text())
-    .then(msg => {
-      console.log(msg);
-      currentIndex++;
-      showImage();
-      clearSelection();
-    })
-    .catch(err => {
-      alert("Error saving data.");
-      console.error(err);
-    });
+    // Open form in new tab
+    window.open(url, "_blank");
+
+    currentIndex++;
+    showImage();
+    clearStatus();
   }
 
-  function clearSelection() {
+  function clearStatus() {
     document.querySelectorAll("input[name='status']").forEach(el => el.checked = false);
   }
-
-  loadCSV();
 </script>
 
 </body>

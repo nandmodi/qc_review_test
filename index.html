@@ -1,57 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Image QC Tool</title>
+  <meta charset="UTF-8" />
+  <title>QC Tool</title>
   <link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    .container {
-      display: flex;
-      height: 80vh;
-      border: 1px solid black;
-    }
-    .image-box {
-      flex: 1;
-      border-right: 1px solid black;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-    }
-    .image-box:last-child {
-      border-right: none;
-    }
-    .image-label {
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-    img {
-      max-width: 100%;
-      max-height: 90%;
-      object-fit: contain;
-    }
-    .buttons {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px;
-      border-top: 1px solid black;
-    }
-    button {
-      flex: 1;
-      padding: 15px;
-      font-size: 16px;
-      border: 1px solid black;
-      cursor: pointer;
-      margin: 0;
-    }
+    body { font-family: Arial, sans-serif; text-align: center; margin: 0; }
+    .container { display: flex; height: 80vh; border: 1px solid black; }
+    .image-box { flex: 1; border-right: 1px solid black; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
+    .image-box:last-child { border-right: none; }
+    .image-label { font-weight: bold; margin-bottom: 10px; }
+    img { max-width: 100%; max-height: 90%; object-fit: contain; }
+    .buttons { display: flex; justify-content: space-evenly; align-items: center; padding: 10px; border-top: 1px solid black; }
+    label { font-size: 16px; margin: 0 10px; }
+    button { padding: 10px 30px; font-size: 16px; }
   </style>
 </head>
 <body>
@@ -68,14 +31,16 @@
 </div>
 
 <div class="buttons">
-  <button onclick="mark('Done')">Done</button>
-  <button onclick="mark('Rejected')">Rejected</button>
-  <button onclick="mark('Editing')">Editing</button>
-  <button onclick="next()">Next</button>
+  <label><input type="radio" name="status" value="Done"> Done</label>
+  <label><input type="radio" name="status" value="Rejected"> Rejected</label>
+  <label><input type="radio" name="status" value="Editing"> Editing</label>
+  <button onclick="submitAndNext()">Next</button>
 </div>
 
 <script>
   const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS0zbVXhPDU2OtWzjP33DZ5rJ8k2lAWdlGhrIVX3P3sSEO0RlkuIaXL14lfbBup8VwJfQAmPifprQRf/pub?gid=1257618858&single=true&output=csv";
+  const scriptURL = "https://script.google.com/macros/s/AKfycbxf1jK7VlonuYzMqPaLnU2kgFvYeEhwB30-uGHiPwuG-UerEhahwnt2XZth2y42G9IThQ/exec";
+
   let data = [];
   let currentIndex = 0;
 
@@ -96,19 +61,52 @@
       document.getElementById("inputImg").src = row["input_image_hres_url"];
       document.getElementById("outputImg").src = row["output_image_hres_url"];
     } else {
-      alert("✅ You’ve reached the end of the list.");
+      alert("✅ End of list");
     }
   }
 
-  function next() {
-    currentIndex++;
-    showImage();
+  function getSelectedStatus() {
+    const radios = document.getElementsByName("status");
+    for (let r of radios) {
+      if (r.checked) return r.value;
+    }
+    return null;
   }
 
-  function mark(status) {
-    const row = data[currentIndex];
-    console.log(`Marked Row ${currentIndex + 1} | SKU: ${row["sku_id"]} | Status: ${status}`);
-    next();
+  function submitAndNext() {
+    const status = getSelectedStatus();
+    if (!status) {
+      alert("Please select a status before proceeding.");
+      return;
+    }
+
+    const payload = {
+      rowIndex: currentIndex + 2, // +2 because Sheets is 1-indexed and has a header row
+      status: status
+    };
+
+    fetch(scriptURL, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(res => res.text())
+    .then(msg => {
+      console.log(msg);
+      currentIndex++;
+      showImage();
+      clearSelection();
+    })
+    .catch(err => {
+      alert("Error saving data.");
+      console.error(err);
+    });
+  }
+
+  function clearSelection() {
+    document.querySelectorAll("input[name='status']").forEach(el => el.checked = false);
   }
 
   loadCSV();

@@ -4,20 +4,21 @@
   <meta charset="UTF-8" />
   <title>QC Review Dashboard</title>
   <link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js">  document.addEventListener("keydown", function(event) {
-    const key = event.key.toLowerCase();
-    const code = event.code;
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js">document.addEventListener("keydown", function(event) {
+  const key = event.key.toLowerCase();
+  const code = event.code;
 
-    if (key === "1" || key === "d" || code === "Numpad1") {
-      document.querySelector('input[value="Done"]').checked = true;
-    } else if (key === "2" || key === "r" || code === "Numpad2") {
-      document.querySelector('input[value="Rejected"]').checked = true;
-    } else if (key === "3" || key === "e" || code === "Numpad3") {
-      document.querySelector('input[value="Editing"]').checked = true;
-    } else if (key === "enter") {
-      submitForm();
-    }
-  });
+  if (key === "1" || key === "d" || code === "Numpad1") {
+    document.querySelector('input[value="Done"]').checked = true;
+  } else if (key === "2" || key === "r" || code === "Numpad2") {
+    document.querySelector('input[value="Rejected"]').checked = true;
+  } else if (key === "3" || key === "e" || code === "Numpad3") {
+    document.querySelector('input[value="Editing"]').checked = true;
+  } else if (event.key === "Enter") {
+    event.preventDefault();
+    submitForm();
+  }
+});
 </script>
   <style>
     body {

@@ -42,24 +42,20 @@
 
 <div class="controls">
   <div class="status-group">
-    <label><input type="radio" name="status" value="Done"> Done</label>
-    <label><input type="radio" name="status" value="Rejected"> Rejected</label>
-    <label><input type="radio" name="status" value="Editing"> Editing</label>
+    <label><input type="radio" name="status" value="Done"> Done (1 / D)</label>
+    <label><input type="radio" name="status" value="Rejected"> Rejected (2 / R)</label>
+    <label><input type="radio" name="status" value="Editing"> Editing (3 / E)</label>
   </div>
   <br>
-  <button onclick="submitForm()">Next</button>
+  <button onclick="submitForm()">Next (Enter)</button>
 </div>
 
 <iframe id="hiddenSubmitFrame" name="hiddenSubmitFrame"></iframe>
 
 <script>
-  // ✅ Your CSV data link
   const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQc6Bd5VEE067t02ubbCE_rAYzgOEN9ggvB8uH28TQKldJ5qGePkdSQeYbdvpbhl3lwb1yIhAr8685B/pub?gid=0&single=true&output=csv";
-
-  // ✅ Your form response URL (not prefill — this is /formResponse)
   const formBaseURL = "https://docs.google.com/forms/d/e/1FAIpQLSfAcGmJXwfrNV1xLUHNEYGRw7I4ErTNH5n6GhUltxDcAH008w/formResponse";
 
-  // ✅ Your entry field mappings from Google Form
   const entries = {
     image_id: "entry.331138758",
     sku_id: "entry.921407097",
@@ -69,26 +65,21 @@
   let data = [];
   let currentIndex = 0;
 
-  // ✅ Load CSV and filter out reviewed rows
   Papa.parse(csvUrl, {
     download: true,
     header: true,
     complete: function(results) {
       const allRows = results.data;
-
-      // Filter: only rows without valid 'status'
+      const allowed = ["done", "rejected", "editing"];
       data = allRows.filter(row => {
-        const allowed = ["done", "rejected", "editing"];
         const rawStatus = row.status;
         const status = (rawStatus && !rawStatus.startsWith("#")) ? rawStatus.trim().toLowerCase() : "";
         return !allowed.includes(status);
       });
-
       showImage();
     }
   });
 
-  // ✅ Show current image + metadata
   function showImage() {
     const total = data.length;
     if (currentIndex < total) {
@@ -107,7 +98,6 @@
     }
   }
 
-  // ✅ Read selected radio button value
   function getStatus() {
     const radios = document.getElementsByName("status");
     for (let r of radios) {
@@ -116,7 +106,6 @@
     return null;
   }
 
-  // ✅ Submit status to Google Form via iframe, then move to next
   function submitForm() {
     const status = getStatus();
     if (!status) {
@@ -125,13 +114,12 @@
     }
 
     const row = data[currentIndex];
-
     const formParams = new URLSearchParams();
     formParams.append(entries.image_id, row.image_id);
     formParams.append(entries.sku_id, row.sku_id);
     formParams.append(entries.status, status);
-
     const formAction = `${formBaseURL}?${formParams.toString()}`;
+
     document.getElementById("hiddenSubmitFrame").src = formAction;
 
     setTimeout(() => {
@@ -142,8 +130,24 @@
   }
 
   function clearStatus() {
-    document.querySelectorAll("input[name='status']").forEach(el => el.checked = false);
+    document.querySelectorAll("input[name='status"]').forEach(el => el.checked = false);
   }
+
+  // ✅ Keyboard Shortcuts
+  document.addEventListener("keydown", function(event) {
+    const key = event.key.toLowerCase();
+    const keyCode = event.code;
+
+    if (key === "1" || key === "d" || keyCode === "Numpad1") {
+      document.querySelector('input[value="Done"]').checked = true;
+    } else if (key === "2" || key === "r" || keyCode === "Numpad2") {
+      document.querySelector('input[value="Rejected"]').checked = true;
+    } else if (key === "3" || key === "e" || keyCode === "Numpad3") {
+      document.querySelector('input[value="Editing"]').checked = true;
+    } else if (key === "enter") {
+      submitForm();
+    }
+  });
 </script>
 
 </body>

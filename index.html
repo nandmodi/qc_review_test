@@ -11,8 +11,7 @@
     .image-box {
       flex: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      border: 1px solid #000;
-      padding: 10px;
+      border: 1px solid #000; padding: 10px;
     }
     img { max-width: 100%; max-height: 80%; }
     .controls { margin: 20px; }
@@ -20,6 +19,7 @@
     iframe { display: none; }
     .meta { margin-top: 10px; font-size: 14px; color: #555; }
     .progress { font-weight: bold; margin: 10px; }
+    button { padding: 10px 20px; font-size: 16px; }
   </style>
 </head>
 <body>
@@ -53,10 +53,13 @@
 <iframe id="hiddenSubmitFrame" name="hiddenSubmitFrame"></iframe>
 
 <script>
+  // ✅ Your CSV data link
   const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQc6Bd5VEE067t02ubbCE_rAYzgOEN9ggvB8uH28TQKldJ5qGePkdSQeYbdvpbhl3lwb1yIhAr8685B/pub?gid=0&single=true&output=csv";
 
+  // ✅ Your form response URL (not prefill — this is /formResponse)
   const formBaseURL = "https://docs.google.com/forms/d/e/1FAIpQLSfAcGmJXwfrNV1xLUHNEYGRw7I4ErTNH5n6GhUltxDcAH008w/formResponse";
 
+  // ✅ Your entry field mappings from Google Form
   const entries = {
     image_id: "entry.331138758",
     sku_id: "entry.921407097",
@@ -66,19 +69,26 @@
   let data = [];
   let currentIndex = 0;
 
+  // ✅ Load CSV and filter out reviewed rows
   Papa.parse(csvUrl, {
     download: true,
     header: true,
     complete: function(results) {
       const allRows = results.data;
+
+      // Filter: only rows without valid 'status'
       data = allRows.filter(row => {
-        const status = row.status ? row.status.trim().toLowerCase() : "";
-        return !(status === "done" || status === "rejected" || status === "editing");
+        const allowed = ["done", "rejected", "editing"];
+        const rawStatus = row.status;
+        const status = (rawStatus && !rawStatus.startsWith("#")) ? rawStatus.trim().toLowerCase() : "";
+        return !allowed.includes(status);
       });
+
       showImage();
     }
   });
 
+  // ✅ Show current image + metadata
   function showImage() {
     const total = data.length;
     if (currentIndex < total) {
@@ -97,6 +107,7 @@
     }
   }
 
+  // ✅ Read selected radio button value
   function getStatus() {
     const radios = document.getElementsByName("status");
     for (let r of radios) {
@@ -105,6 +116,7 @@
     return null;
   }
 
+  // ✅ Submit status to Google Form via iframe, then move to next
   function submitForm() {
     const status = getStatus();
     if (!status) {
@@ -120,9 +132,7 @@
     formParams.append(entries.status, status);
 
     const formAction = `${formBaseURL}?${formParams.toString()}`;
-
-    const iframe = document.getElementById("hiddenSubmitFrame");
-    iframe.src = formAction;
+    document.getElementById("hiddenSubmitFrame").src = formAction;
 
     setTimeout(() => {
       currentIndex++;

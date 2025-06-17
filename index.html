@@ -42,12 +42,12 @@
 
 <div class="controls">
   <div class="status-group">
-    <label><input type="radio" name="status" value="Done"> Done</label>
-    <label><input type="radio" name="status" value="Rejected"> Rejected</label>
-    <label><input type="radio" name="status" value="Editing"> Editing</label>
+    <label><input type="radio" name="status" value="Done"> Done (1 / D)</label>
+    <label><input type="radio" name="status" value="Rejected"> Rejected (2 / R)</label>
+    <label><input type="radio" name="status" value="Editing"> Editing (3 / E)</label>
   </div>
   <br>
-  <button onclick="submitForm()">Next</button>
+  <button onclick="submitForm()">Next (Enter)</button>
 </div>
 
 <iframe id="hiddenSubmitFrame" name="hiddenSubmitFrame"></iframe>
@@ -70,11 +70,9 @@
     header: true,
     complete: function(results) {
       const allRows = results.data;
-      const allowed = ["done", "rejected", "editing"];
       data = allRows.filter(row => {
-        const rawStatus = row.status;
-        const status = (rawStatus && !rawStatus.startsWith("#")) ? rawStatus.trim().toLowerCase() : "";
-        return !allowed.includes(status);
+        const statusRaw = (row.status || "").toString().trim().toLowerCase();
+        return !["done", "rejected", "editing"].includes(statusRaw);
       });
       showImage();
     }
@@ -130,10 +128,9 @@
   }
 
   function clearStatus() {
-    document.querySelectorAll("input[name='status']").forEach(el => el.checked = false);
+    document.querySelectorAll("input[name='status"]').forEach(el => el.checked = false);
   }
 
-  // ✅ Keyboard Shortcuts
   document.addEventListener("keydown", function(event) {
     const key = event.key.toLowerCase();
     const keyCode = event.code;

@@ -1,510 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>360 QC Review Dashboard</title>
-<link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
-
-<!-- Choices.js CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-
-<style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f4f7fa;
-    color: #333;
-    padding: 40px 20px;
-    margin: 0;
-  }
-  h2 {
-    font-weight: 700;
-    color: #222;
-    margin-bottom: 30px;
-    text-align: center;
-    letter-spacing: 1.2px;
-  }
-  .filters {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    gap: 15px 20px;
-    margin-bottom: 30px;
-    overflow-x: auto;
-    padding-bottom: 10px;
-  }
-  .filters label {
-    display: flex;
-    flex-direction: column;
-    font-size: 14px;
-    color: #555;
-    min-width: auto;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .filters label input[type="date"] {
-    width: 140px;
-    padding: 8px 12px;
-  }
-  .filters label select {
-    width: 180px;
-    padding: 8px 12px;
-    font-size: 14px;
-  }
-  .filters > div {
-    flex-shrink: 0;
-  }
-  .filters > div button {
-    margin-top: 22px;
-    padding: 12px 28px;
-    font-size: 17px;
-    border-radius: 8px;
-    box-shadow: 0 6px 16px rgba(0,123,255,0.4);
-    background-color: #007bff;
-    border: none;
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  .filters > div button:hover:not(:disabled) {
-    background-color: #0056b3;
-  }
-  .filters > div button:disabled {
-    background-color: #a3a3a3;
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-  #table-container {
-    overflow-x: auto;
-    box-shadow: 0 4px 20px rgb(0 0 0 / 0.05);
-    border-radius: 10px;
-    background: #fff;
-    padding: 20px;
-  }
-  table {
-    border-collapse: separate;
-    border-spacing: 0 8px;
-    width: 100%;
-    min-width: 900px;
-    font-size: 14.5px;
-    color: #444;
-  }
-  th, td {
-    padding: 14px 18px;
-    text-align: left;
-    vertical-align: middle;
-    background: #fff;
-    border: none;
-  }
-  th {
-    background-color: #e9f0ff;
-    font-weight: 600;
-    color: #007bff;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  tr:hover td {
-    background-color: #f5faff;
-  }
-  a.link-button {
-    color: #007bff;
-    cursor: pointer;
-    font-weight: 600;
-    text-decoration: underline;
-  }
-  a.link-button:visited {
-    color: #0056b3;
-  }
-  /* Modal styles */
-  #modal {
-    display: none;
-    position: fixed;
-    z-index: 10000;
-    top: 0; left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0,0,0,0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-  #modalContent {
-    background: #fff;
-    width: 100vw;
-    height: 100vh;
-    border-radius: 0;
-    box-shadow: none;
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 10001;
-  }
-  #modalHeader {
-    padding: 10px 20px;
-    font-weight: 700;
-    font-size: 18px;
-    color: #007bff;
-    border-bottom: 1px solid #ccc;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #f9fbff;
-  }
-  #closeModal {
-    cursor: pointer;
-    font-size: 28px;
-    font-weight: 700;
-    color: #007bff;
-    border: none;
-    background: none;
-  }
-  #modalIssues {
-    padding: 15px 20px;
-    background: #fff9e6;
-    color: #8a6d00;
-    font-size: 16px;
-    font-weight: 600;
-    border-bottom: 1px solid #f5e1a4;
-    max-height: 100px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-  }
-  #modalIframe {
-    flex: 1;
-    border: none;
-    width: 100%;
-    height: auto;
-  }
-  #modalFooter {
-    padding: 12px 20px;
-    border-top: 1px solid #ccc;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    background: #f9fbff;
-  }
-  #modalFooter textarea {
-    flex: 1;
-    resize: vertical;
-    min-height: 60px;
-    font-size: 16px;
-    padding: 12px 15px;
-    border-radius: 6px;
-    border: 1.8px solid #ccc;
-    transition: border-color 0.3s ease;
-  }
-  #modalFooter textarea:focus {
-    border-color: #007bff;
-    outline: none;
-    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>Image QC Tool</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      display: flex;
+      height: 80vh;
+      border: 1px solid black;
+    }
+    .image-box {
+      flex: 1;
+      border-right: 1px solid black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .image-box:last-child {
+      border-right: none;
+    }
+    img {
+      max-width: 100%;
+      max-height: 100%;
+    }
+    .label {
+      position: absolute;
+      top: 10px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .buttons {
+      display: flex;
+      justify-content: space-around;
+      padding: 10px;
+      border-top: 1px solid black;
+    }
+    button {
+      flex: 1;
+      padding: 15px;
+      font-size: 16px;
+      border: 1px solid black;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
-<h2>360 QC Review Dashboard</h2>
-
-<div class="filters">
-  <label>Start Date: <input type="date" id="startDate" /></label>
-  <label>End Date: <input type="date" id="endDate" /></label>
-  <label>User:
-    <select id="userFilter" placeholder="Select User(s)"></select>
-  </label>
-  <label>Enterprise:
-    <select id="enterpriseFilter" placeholder="Select Enterprise(s)"></select>
-  </label>
-  <label>Issue:
-    <select id="issueFilter" placeholder="Select Issue(s)">
-      <option value="nullblank">Null/Blank</option>
-      <option value="blocker">Blocker</option>
-      <option value="high">High</option>
-      <option value="low">Low</option>
-    </select>
-  </label>
-  <div>
-    <button onclick="applyFilters()">Filter</button>
+<div class="container">
+  <div class="image-box" id="inputBox">
+    <span class="label">Input</span>
+    <img id="inputImg" src="" alt="Input Image">
+  </div>
+  <div class="image-box" id="outputBox">
+    <span class="label">Output</span>
+    <img id="outputImg" src="" alt="Output Image">
   </div>
 </div>
 
-<div id="table-container">Loading...</div>
-
-<!-- Modal -->
-<div id="modal">
-  <div id="modalContent">
-    <div id="modalHeader">
-      <div>Spin Viewer</div>
-      <button id="closeModal" title="Close">&times;</button>
-    </div>
-    <div id="modalIssues"></div>
-    <iframe id="modalIframe" src=""></iframe>
-    <div id="modalFooter">
-      <textarea id="modalComment" placeholder="Enter your comment here..."></textarea>
-      <button id="modalSubmitBtn">Submit</button>
-    </div>
-  </div>
+<div class="buttons">
+  <button onclick="mark('Done')">Done</button>
+  <button onclick="mark('Rejected')">Rejected</button>
+  <button onclick="mark('Editing')">Editing</button>
+  <button onclick="next()">Next</button>
 </div>
-
-<!-- Choices.js CSS and JS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
 <script>
-  const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vThoeXNovzUYQaHoFqHYY8p4hxrGTJWUPF8dQs0cinxvypfUVwAzFu74l06jhqXm0x611kRke13fa2t/pub?gid=0&single=true&output=csv';
-  const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeQH6R9-rYr1Kh2rwUBKu7uGvJAkRrvx8fnxF6jfkac7sNL2A/formResponse';
+  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS0zbVXhPDU2OtWzjP33DZ5rJ8k2lAWdlGhrIVX3P3sSEO0RlkuIaXL14lfbBup8VwJfQAmPifprQRf/pub?gid=1257618858&single=true&output=csv";
+  let data = [];
+  let currentIndex = 0;
 
-  let globalData = [];
-  let filteredData = [];
-  let currentModalIndex = null;
-
-  let userChoice, enterpriseChoice, issueChoice;
-
-  function escapeHtml(text) {
-    if (!text) return '';
-    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  }
-
-  function escapeHtmlAttr(text) {
-    if (!text) return '';
-    return text.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  }
-
-  function getSelectedValues(choiceInstance) {
-    return choiceInstance.getValue(true).map(v => v.toLowerCase().trim());
-  }
-
-  function loadAndFilterCSV() {
-    fetch(CSV_URL)
-      .then(res => res.text())
-      .then(csv => {
-        Papa.parse(csv, {
-          header: true,
-          skipEmptyLines: true,
-          transformHeader: h => h.trim(),
-          complete: results => {
-            globalData = results.data;
-            populateDropdowns();
-            applyFilters();
-          },
-          error: err => {
-            document.getElementById('table-container').innerText = 'Error loading data.';
-            console.error('CSV load error:', err);
-          }
-        });
-      })
-      .catch(err => {
-        document.getElementById('table-container').innerText = 'Error fetching CSV.';
-        console.error('Fetch error:', err);
-      });
-  }
-
-  function populateDropdowns() {
-    const userSet = new Set(), entSet = new Set();
-    globalData.forEach(row => {
-      if (row['User']) userSet.add(row['User']);
-      if (row['Enterprise']) entSet.add(row['Enterprise']);
-    });
-
-    const userSelect = document.getElementById('userFilter');
-    userSelect.innerHTML = [...userSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
-    const entSelect = document.getElementById('enterpriseFilter');
-    entSelect.innerHTML = [...entSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
-
-    if (!userChoice) {
-      userChoice = new Choices(userSelect, { removeItemButton: true, placeholderValue: 'Select User(s)' });
-    } else {
-      userChoice.setChoices([...userSet].map(v => ({ value: v, label: v })), 'value', 'label', true);
-    }
-
-    if (!enterpriseChoice) {
-      enterpriseChoice = new Choices(entSelect, { removeItemButton: true, placeholderValue: 'Select Enterprise(s)' });
-    } else {
-      enterpriseChoice.setChoices([...entSet].map(v => ({ value: v, label: v })), 'value', 'label', true);
-    }
-
-    if (!issueChoice) {
-      issueChoice = new Choices('#issueFilter', { removeItemButton: true, placeholderValue: 'Select Issue(s)' });
-    }
-  }
-
-  function applyFilters() {
-    const start = document.getElementById('startDate').value;
-    const end = document.getElementById('endDate').value;
-    const users = getSelectedValues(userChoice);
-    const ents = getSelectedValues(enterpriseChoice);
-    const issues = getSelectedValues(issueChoice);
-
-    filteredData = globalData.filter(row => {
-      if (!row['User']) return false;
-      const rawDate = row['Date'] ? row['Date'].split('T')[0].trim() : '';
-      if (!rawDate) return false;
-      if (start && rawDate < start) return false;
-      if (end && rawDate > end) return false;
-
-      // OR logic within filter category: include row if its value is in selected list OR if no selection, include all
-      if (users.length > 0 && !users.includes((row['User'] || '').toLowerCase().trim())) return false;
-      if (ents.length > 0 && !ents.includes((row['Enterprise'] || '').toLowerCase().trim())) return false;
-
-      const rowIssues = (row['Issues'] || '').toLowerCase().trim();
-
-      if (issues.length > 0) {
-        if (issues.includes('nullblank')) {
-          if (rowIssues.length > 0) {
-            const otherIssues = issues.filter(i => i !== 'nullblank');
-            if (otherIssues.length > 0) {
-              const matchOther = otherIssues.some(i => rowIssues.includes(i));
-              if (!matchOther) return false;
-            } else {
-              return false;
-            }
-          }
-        } else {
-          const match = issues.some(i => rowIssues.includes(i));
-          if (!match) return false;
-        }
+  function loadCSV() {
+    Papa.parse(csvUrl, {
+      download: true,
+      header: true,
+      complete: function(results) {
+        data = results.data;
+        showImage();
       }
-
-      return true;
     });
-
-    renderTable(filteredData);
   }
 
-  function renderTable(data) {
-    if (!data.length) {
-      document.getElementById('table-container').innerHTML = 'No matching data.';
-      return;
-    }
-
-    let html = `<table id="qc-table"><tr>
-      <th>Date</th><th>Spin_ID</th><th>SKU_ID</th><th>Issues</th><th>Enterprise</th><th>User</th><th>Spin URL</th>
-    </tr>`;
-
-    data.forEach((row, i) => {
-      const dateVal = escapeHtml(row['Date'] ? row['Date'].split('T')[0].trim() : '');
-      const spinId = escapeHtml(row['Spin_ID'] || '');
-      const skuId = escapeHtml(row['SKU_ID'] || '');
-      const enterprise = escapeHtml(row['Enterprise'] || '');
-      const user = escapeHtml(row['User'] || '');
-      const spinURL = row['spin_url'] || '';
-      const issuesHtml = escapeHtml(row['Issues'] || '').replace(/\n/g, '<br>');
-
-      const submitted = row._submitted || false;
-      const linkClass = submitted ? 'link-button disabled' : 'link-button';
-      const linkStyle = submitted ? 'pointer-events:none; color:gray; text-decoration:none;' : '';
-
-      html += `<tr>
-        <td>${dateVal}</td>
-        <td>${spinId}</td>
-        <td>${skuId}</td>
-        <td>${issuesHtml}</td>
-        <td>${enterprise}</td>
-        <td>${user}</td>
-        <td><a class="${linkClass}" style="${linkStyle}" onclick="openModal(${i})" title="View Spin" href="javascript:void(0)">View Spin</a></td>
-      </tr>`;
-    });
-
-    html += '</table>';
-    document.getElementById('table-container').innerHTML = html;
-  }
-
-  function openModal(i) {
-    currentModalIndex = i;
-    const row = filteredData[i];
-    const url = row['spin_url'];
-    if (!url) return alert('Spin URL not available');
-    document.getElementById('modalIframe').src = url;
-
-    const issuesText = row['Issues'] || 'No issues reported.';
-    document.getElementById('modalIssues').textContent = issuesText;
-
-    document.getElementById('modalComment').value = '';
-    document.getElementById('modal').style.display = 'flex';
-  }
-
-  function closeModal() {
-    document.getElementById('modal').style.display = 'none';
-    document.getElementById('modalIframe').src = '';
-  }
-
-  document.getElementById('closeModal').addEventListener('click', closeModal);
-
-  document.getElementById('modalSubmitBtn').addEventListener('click', () => {
-    if (currentModalIndex === null) return;
-    const comment = document.getElementById('modalComment').value.trim();
-    if (!comment) {
-      alert('Please enter a comment before submitting.');
-      return;
-    }
-    submitFormRow(currentModalIndex, comment);
-  });
-
-  function submitFormRow(i, commentValue) {
-    try {
-      const row = filteredData[i];
-      const spinId = escapeHtmlAttr(row['Spin_ID'] || '');
-      const skuId = escapeHtmlAttr(row['SKU_ID'] || '');
-      const enterprise = escapeHtmlAttr(row['Enterprise'] || '');
-      const user = escapeHtmlAttr(row['User'] || '');
-      const issue = escapeHtmlAttr(row['Issues'] || '');
-      const comment = escapeHtmlAttr(commentValue || '');
-      const spinUrl = escapeHtmlAttr(row['spin_url'] || '');
-
-      const form = document.createElement("form");
-      form.action = FORM_URL;
-      form.method = "POST";
-      form.target = "hidden_iframe";
-      form.style.display = "none";
-
-      form.innerHTML = `
-        <input name="entry.1125049159" value="${spinId}">
-        <input name="entry.703277665" value="${skuId}">
-        <input name="entry.1815472287" value="${enterprise}">
-        <input name="entry.582537694" value="${user}">
-        <input name="entry.575622617" value="${issue}">
-        <input name="entry.1751143375" value="${comment}">
-        <input name="entry.1372347436" value="${spinUrl}">
-      `;
-
-      const iframe = document.getElementsByName('hidden_iframe')[0];
-      if (iframe) {
-        iframe.onload = function () {
-          filteredData[i]._submitted = true;
-          renderTable(filteredData);
-          closeModal();
-        };
-      }
-
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-    } catch (error) {
-      console.error('Error submitting form row', i, error);
+  function showImage() {
+    if (currentIndex < data.length) {
+      document.getElementById("inputImg").src = data[currentIndex]["Input"];
+      document.getElementById("outputImg").src = data[currentIndex]["Output"];
+    } else {
+      alert("No more images!");
     }
   }
 
-  window.onload = () => {
-    userChoice = new Choices('#userFilter', { removeItemButton: true, placeholderValue: 'Select User(s)' });
-    enterpriseChoice = new Choices('#enterpriseFilter', { removeItemButton: true, placeholderValue: 'Select Enterprise(s)' });
-    issueChoice = new Choices('#issueFilter', { removeItemButton: true, placeholderValue: 'Select Issue(s)' });
+  function next() {
+    currentIndex++;
+    showImage();
+  }
 
-    const today = new Date().toISOString().split('T')[0];
-    const lastWeek = new Date();
-    lastWeek.setDate(lastWeek.getDate() - 7);
-    document.getElementById('endDate').value = today;
-    document.getElementById('startDate').value = lastWeek.toISOString().split('T')[0];
-    loadAndFilterCSV();
-  };
+  function mark(status) {
+    console.log(`Row ${currentIndex + 1} marked as ${status}`);
+    // You can add logic here to save the status locally or in a separate sheet using Apps Script
+    next();
+  }
+
+  loadCSV();
 </script>
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-
-<iframe name="hidden_iframe" style="display:none;"></iframe>
 
 </body>
 </html>

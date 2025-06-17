@@ -70,7 +70,11 @@
     download: true,
     header: true,
     complete: function(results) {
-      data = results.data;
+      const allRows = results.data;
+      data = allRows.filter(row => {
+        const status = row.status ? row.status.trim().toLowerCase() : "";
+        return !(status === "done" || status === "rejected" || status === "editing");
+      });
       showImage();
     }
   });
@@ -120,7 +124,6 @@
     const iframe = document.getElementById("hiddenSubmitFrame");
     iframe.src = formAction;
 
-    // Proceed to next image after short delay
     setTimeout(() => {
       currentIndex++;
       showImage();

@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>Image QC Tool</title>
+  <link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
       margin: 0;
       padding: 0;
+      text-align: center;
     }
     .container {
       display: flex;
@@ -20,25 +21,26 @@
       flex: 1;
       border-right: 1px solid black;
       display: flex;
-      align-items: center;
+      flex-direction: column;
       justify-content: center;
+      align-items: center;
+      overflow: hidden;
     }
     .image-box:last-child {
       border-right: none;
     }
+    .image-label {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
     img {
       max-width: 100%;
-      max-height: 100%;
-    }
-    .label {
-      position: absolute;
-      top: 10px;
-      font-weight: bold;
-      font-size: 16px;
+      max-height: 90%;
+      object-fit: contain;
     }
     .buttons {
       display: flex;
-      justify-content: space-around;
+      justify-content: space-between;
       padding: 10px;
       border-top: 1px solid black;
     }
@@ -48,18 +50,19 @@
       font-size: 16px;
       border: 1px solid black;
       cursor: pointer;
+      margin: 0;
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="image-box" id="inputBox">
-    <span class="label">Input</span>
+  <div class="image-box">
+    <div class="image-label">Input</div>
     <img id="inputImg" src="" alt="Input Image">
   </div>
-  <div class="image-box" id="outputBox">
-    <span class="label">Output</span>
+  <div class="image-box">
+    <div class="image-label">Output</div>
     <img id="outputImg" src="" alt="Output Image">
   </div>
 </div>
@@ -89,10 +92,11 @@
 
   function showImage() {
     if (currentIndex < data.length) {
-      document.getElementById("inputImg").src = data[currentIndex]["Input"];
-      document.getElementById("outputImg").src = data[currentIndex]["Output"];
+      const row = data[currentIndex];
+      document.getElementById("inputImg").src = row["input_image_hres_url"];
+      document.getElementById("outputImg").src = row["output_image_hres_url"];
     } else {
-      alert("No more images!");
+      alert("✅ You’ve reached the end of the list.");
     }
   }
 
@@ -102,8 +106,8 @@
   }
 
   function mark(status) {
-    console.log(`Row ${currentIndex + 1} marked as ${status}`);
-    // You can add logic here to save the status locally or in a separate sheet using Apps Script
+    const row = data[currentIndex];
+    console.log(`Marked Row ${currentIndex + 1} | SKU: ${row["sku_id"]} | Status: ${status}`);
     next();
   }
 

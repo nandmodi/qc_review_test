@@ -2,15 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-<link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
   <title>QC Form Submit</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
-    body { font-family: Arial; text-align: center; margin: 0; }
+    body { font-family: Arial; text-align: center; margin: 0; padding: 0; }
     .container { display: flex; height: 80vh; }
-    .image-box { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #000; }
+    .image-box {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      border: 1px solid #000;
+    }
     img { max-width: 100%; max-height: 80%; }
     .controls { margin: 20px; }
+    .status-group { margin-top: 20px; }
   </style>
 </head>
 <body>
@@ -29,22 +33,24 @@
 </div>
 
 <div class="controls">
-  <label><input type="radio" name="status" value="Done"> Done</label>
-  <label><input type="radio" name="status" value="Rejected"> Rejected</label>
-  <label><input type="radio" name="status" value="Editing"> Editing</label>
-  <br><br>
+  <div class="status-group">
+    <label><input type="radio" name="status" value="Done"> Done</label>
+    <label><input type="radio" name="status" value="Rejected"> Rejected</label>
+    <label><input type="radio" name="status" value="Editing"> Editing</label>
+  </div>
+  <br>
   <button onclick="submitForm()">Next</button>
 </div>
 
 <script>
-  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS0zbVXhPDU2OtWzjP33DZ5rJ8k2lAWdlGhrIVX3P3sSEO0RlkuIaXL14lfbBup8VwJfQAmPifprQRf/pub?gid=1257618858&single=true&output=csv";
+  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQc6Bd5VEE067t02ubbCE_rAYzgOEN9ggvB8uH28TQKldJ5qGePkdSQeYbdvpbhl3lwb1yIhAr8685B/pub?gid=0&single=true&output=csv";
 
-  const formBaseURL = "https://docs.google.com/forms/d/e/1FAIpQLSfrRmrHKwGRqmps8FVbTWvDoRa0NLE0au-4xiSpoX5cMuM8zw/viewform?usp=pp_url";
+  const formBaseURL = "https://docs.google.com/forms/d/e/1FAIpQLSfAcGmJXwfrNV1xLUHNEYGRw7I4ErTNH5n6GhUltxDcAH008w/viewform?usp=pp_url";
 
   const entries = {
-    image_id: "entry.907872641",
-    sku_id: "entry.1319918485",
-    status: "entry.410426993"
+    image_id: "entry.331138758",
+    sku_id: "entry.921407097",
+    status: "entry.2036611691"
   };
 
   let data = [];
@@ -87,7 +93,6 @@
     const row = data[currentIndex];
     const url = `${formBaseURL}&${entries.image_id}=${encodeURIComponent(row.image_id)}&${entries.sku_id}=${encodeURIComponent(row.sku_id)}&${entries.status}=${encodeURIComponent(status)}`;
 
-    // Open form in new tab
     window.open(url, "_blank");
 
     currentIndex++;

@@ -16,7 +16,7 @@
     header {
       background: #0057a3;
       color: white;
-      padding: 1px 0;
+      padding: 10px 0;
       text-align: center;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
@@ -24,8 +24,8 @@
       display: flex;
       justify-content: space-around;
       align-items: flex-start;
-      padding: 1px;
-      gap: 1px;
+      padding: 20px;
+      gap: 20px;
     }
     .image-box {
       flex: 1;
@@ -153,12 +153,10 @@
           const status = statusKey ? (row[statusKey] || "").trim().toLowerCase() : "";
           return status === "" || !["done", "rejected", "editing"].includes(status);
         });
-        if (data.length === 0) {
-          document.getElementById("progressText").innerText = "🎉 All SKUs are already reviewed. No SKU left.";
-          document.getElementById("inputImg").style.display = "none";
-          document.getElementById("outputImg").style.display = "none";
-          document.querySelector(".controls").style.display = "none";
-          return;
+        showImage();
+        preloadNextImages();
+      }
+        
         }
         });
         showImage();
@@ -176,7 +174,11 @@
 
       if (currentIndex >= data.length) {
         document.getElementById("progressText").innerText = "✅ Review complete!";
+        document.getElementById("inputImg").style.display = "none";
+        document.getElementById("outputImg").style.display = "none";
+        document.querySelector(".controls").style.display = "none";
         return;
+      }
       }
       const row = data[currentIndex];
       document.getElementById("inputImg").src = row["input_image_hres_url"];

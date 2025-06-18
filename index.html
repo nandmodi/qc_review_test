@@ -4,14 +4,7 @@
   <meta charset="UTF-8" />
   <title>QC Review Dashboard</title>
   <link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js">document.querySelectorAll('.image-box img').forEach(img => {
-  img.addEventListener('click', () => {
-    img.style.transform = img.style.transform === 'scale(2)' ? 'scale(1)' : 'scale(2)';
-    img.style.transition = 'transform 0.3s ease';
-    img.style.zIndex = '10';
-  });
-});
-</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -133,6 +126,20 @@
     }
   });
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll('.image-box img').forEach(img => {
+    img.addEventListener('click', function () {
+      const isZoomed = this.classList.toggle('zoomed');
+      this.style.transform = isZoomed ? 'scale(2)' : 'scale(1)';
+      this.style.zIndex = isZoomed ? '10' : '1';
+      this.style.transition = 'transform 0.3s ease';
+    });
+  });
+});
+  });
+});
+</script>
 </head>
 <body>
 
@@ -157,11 +164,11 @@
 
 <div class="controls">
   <div class="status-group">
-    <label><input type="radio" name="status" value="Done"> Done</label>
-    <label><input type="radio" name="status" value="Rejected"> Rejected</label>
-    <label><input type="radio" name="status" value="Editing"> Editing</label>
+    <label><input type="radio" name="status" value="Done"> Done (1 / D)</label>
+    <label><input type="radio" name="status" value="Rejected"> Rejected (2 / R)</label>
+    <label><input type="radio" name="status" value="Editing"> Editing (3 / E)</label>
   </div>
-  <button onclick="submitForm()">Next</button>
+  <button onclick="submitForm()">Next (Enter)</button>
 </div>
 
 <iframe id="hiddenSubmitFrame" name="hiddenSubmitFrame"></iframe>

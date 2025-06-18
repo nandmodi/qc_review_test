@@ -17,37 +17,40 @@
     header {
       background: #0057a3;
       color: white;
-      padding: 20px 0;
+      padding: 0;
       text-align: center;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
+    header h1 {
+      margin: 10px 0;
+      font-size: 1.8em;
+    }
+
     .container {
       display: flex;
-      justify-content: space-around;
+      justify-content: space-between;
       align-items: flex-start;
       padding: 20px;
-      gap: 20px;
+      gap: 1px;
     }
 
     .image-box {
       flex: 1;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      background: none;
+      padding: 0;
+      border-radius: 0;
+      box-shadow: none;
       text-align: center;
     }
 
     .image-box img {
-      max-width: 100%;
-      max-height: 600px;
-      min-height: 400px;
-      width: auto;
+      width: 100%;
       height: auto;
-      border-radius: 8px;
-      margin-bottom: 10px;
+      max-height: 600px;
       object-fit: contain;
+      border: none;
+      margin-bottom: 5px;
     }
 
     .meta {
@@ -119,7 +122,7 @@
 
 <div class="progress" id="progressText">Loading data, please wait...</div>
 
-<div class="container">
+<div class="container" id="imageContainer" style="display: none;">
   <div class="image-box">
     <h3>Input Image</h3>
     <img id="inputImg" loading="lazy" alt="Input Image">
@@ -132,7 +135,7 @@
   </div>
 </div>
 
-<div class="controls">
+<div class="controls" id="controlPanel" style="display: none;">
   <div class="status-group">
     <label><input type="radio" name="status" value="Done"> Done (1 / D)</label>
     <label><input type="radio" name="status" value="Rejected"> Rejected (2 / R)</label>
@@ -156,16 +159,28 @@
         const status = (row.status || '').trim().toLowerCase();
         return !["done", "rejected", "editing"].includes(status);
       });
-      showImage();
-      preloadNextImages();
+
+      if (data.length === 0) {
+        document.getElementById("progressText").innerText = "✅ All SKUs are already reviewed. No SKU left.";
+        document.getElementById("imageContainer").style.display = "none";
+        document.getElementById("controlPanel").style.display = "none";
+      } else {
+        document.getElementById("imageContainer").style.display = "flex";
+        document.getElementById("controlPanel").style.display = "block";
+        showImage();
+        preloadNextImages();
+      }
     }
   });
 
   function showImage() {
     if (currentIndex >= data.length) {
-      document.getElementById("progressText").innerText = "✅ Review complete!";
+      document.getElementById("progressText").innerText = `🎉 You reviewed ${data.length} SKUs!`;
+      document.getElementById("imageContainer").style.display = "none";
+      document.getElementById("controlPanel").style.display = "none";
       return;
     }
+
     const row = data[currentIndex];
     document.getElementById("inputImg").src = row["input_image_hres_url"];
     document.getElementById("outputImg").src = row["output_image_hres_url"];
@@ -185,23 +200,19 @@
     form.action = 'https://docs.google.com/forms/d/e/1FAIpQLSfAcGmJXwfrNV1xLUHNEYGRw7I4ErTNH5n6GhUltxDcAH008w/formResponse';
     form.target = 'hiddenSubmitFrame';
 
-    const imageField = document.createElement('input');
-    imageField.type = 'hidden';
-    imageField.name = 'entry.331138758';
-    imageField.value = row["image_id"];
-    form.appendChild(imageField);
+    const fields = [
+      { name: 'entry.331138758', value: row["image_id"] },
+      { name: 'entry.921407097', value: row["sku_id"] },
+      { name: 'entry.2036611691', value: status.value }
+    ];
 
-    const skuField = document.createElement('input');
-    skuField.type = 'hidden';
-    skuField.name = 'entry.921407097';
-    skuField.value = row["sku_id"];
-    form.appendChild(skuField);
-
-    const statusField = document.createElement('input');
-    statusField.type = 'hidden';
-    statusField.name = 'entry.2036611691';
-    statusField.value = status.value;
-    form.appendChild(statusField);
+    fields.forEach(({ name, value }) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    });
 
     document.body.appendChild(form);
     form.submit();
@@ -216,10 +227,8 @@
     for (let i = 1; i <= 3; i++) {
       if (currentIndex + i < data.length) {
         const nextRow = data[currentIndex + i];
-        const preloadInput = new Image();
-        const preloadOutput = new Image();
-        preloadInput.src = nextRow["input_image_hres_url"];
-        preloadOutput.src = nextRow["output_image_hres_url"];
+        new Image().src = nextRow["input_image_hres_url"];
+        new Image().src = nextRow["output_image_hres_url"];
       }
     }
   }

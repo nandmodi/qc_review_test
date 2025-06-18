@@ -144,7 +144,7 @@
 <script>
   const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSuUcfgCukw0_2cu7Nvwao_f0zCFW2b8j0-X6WXBGqVjwchwy5jh0lZekk4UIMT53X-XktmlYqbE8r/pub?gid=0&single=true&output=csv";
   const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSf5UlllmQHY_bFZTndwNStRk47PExlqpCmmCVmZ7E--tDRbpQ/formResponse';
-  const allowedEmails = ["nand@spyne.ai", "qc1@spyne.ai", "qc2@spyne.ai"]; // ✅ Add allowed email IDs here
+  const allowedEmails = ["nand@spyne.ai", "qc1@spyne.ai", "qc2@spyne.ai"]; // Add allowed email IDs here
 
   let data = [];
   let currentIndex = 0;
@@ -221,7 +221,7 @@
       { name: 'entry.331138758', value: row["image_id"] },
       { name: 'entry.921407097', value: row["sku_id"] },
       { name: 'entry.2036611691', value: status.value },
-      { name: 'entry.1234567890', value: loggedInUser } // <-- Replace with your actual email entry field ID
+      { name: 'entry.2101228952', value: loggedInUser } // ✅ Correct email entry field ID
     ];
 
     fields.forEach(({ name, value }) => {

@@ -140,12 +140,13 @@
 document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll('.zoomable').forEach(img => {
     img.addEventListener('click', function () {
-      this.classList.toggle('zoomed');
+      if (this.classList.contains('zoomed')) {
+        this.classList.remove('zoomed');
+      } else {
+        document.querySelectorAll('.zoomable.zoomed').forEach(i => i.classList.remove('zoomed'));
+        this.classList.add('zoomed');
+      }
     });
-  });
-});
-  });
-});
   });
 });
 </script>

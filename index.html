@@ -6,9 +6,6 @@
   <link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
-    
-    
-
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
@@ -16,59 +13,50 @@
       background: #f4f7fa;
       color: #333;
     }
-
     header {
-  background: #0057a3;
-  color: white;
-  padding: 0px 0;
-  text-align: center;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
+      background: #0057a3;
+      color: white;
+      padding: 10px 0;
+      text-align: center;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
     .container {
       display: flex;
       justify-content: space-around;
       align-items: flex-start;
-      padding: 0px;
+      padding: 1px;
       gap: 1px;
     }
-
     .image-box {
-  flex: 1;
-  padding: 0;
-  border-radius: 0;
-  text-align: center;
-  position: relative;
-}
-
+      flex: 1;
+      padding: 0;
+      border-radius: 0;
+      text-align: center;
+      position: relative;
+    }
     .image-box img {
-  max-width: 100%;
-  max-height: 600px;
-  min-height: 400px;
-  width: auto;
-  height: auto;
-  margin: 0;
-  object-fit: contain;
-  cursor: zoom-in;
-}
-
+      max-width: 100%;
+      max-height: 600px;
+      min-height: 400px;
+      width: auto;
+      height: auto;
+      margin: 0;
+      object-fit: contain;
+    }
     .meta {
       font-size: 0.95em;
       color: #666;
     }
-
     .controls {
       margin: 30px auto;
       text-align: center;
     }
-
     .status-group {
       display: flex;
       justify-content: center;
       gap: 1px;
       margin-bottom: 1px;
     }
-
     .status-group label {
       font-size: 1rem;
       background: #e9f0f7;
@@ -77,15 +65,12 @@
       cursor: pointer;
       transition: background 0.3s ease;
     }
-
     .status-group input[type="radio"] {
       margin-right: 8px;
     }
-
     .status-group label:hover {
       background: #d0e5f5;
     }
-
     button {
       padding: 12px 25px;
       font-size: 1rem;
@@ -96,154 +81,142 @@
       cursor: pointer;
       transition: background-color 0.3s;
     }
-
     button:hover {
       background-color: #005bb5;
     }
-
     .progress {
       text-align: center;
-      margin-top: 15px;
+      margin-top: 1px;
       font-size: 1.1rem;
       color: #444;
     }
-
     iframe {
       display: none;
     }
   </style>
-<script>
-  document.addEventListener("keydown", function(event) {
-    const key = event.key.toLowerCase();
-    const code = event.code;
-
-    if (key === "1" || key === "d" || code === "Numpad1") {
-      document.querySelector('input[value="Done"]').checked = true;
-    } else if (key === "2" || key === "r" || code === "Numpad2") {
-      document.querySelector('input[value="Rejected"]').checked = true;
-    } else if (key === "3" || key === "e" || code === "Numpad3") {
-      document.querySelector('input[value="Editing"]').checked = true;
-    } else if (event.key === "Enter") {
-      event.preventDefault();
-      submitForm();
-    }
-  });
-</script>
-
+  <script>
+    document.addEventListener("keydown", function(event) {
+      const key = event.key.toLowerCase();
+      const code = event.code;
+      if (key === "1" || key === "d" || code === "Numpad1") {
+        document.querySelector('input[value="Done"]').checked = true;
+      } else if (key === "2" || key === "r" || code === "Numpad2") {
+        document.querySelector('input[value="Rejected"]').checked = true;
+      } else if (key === "3" || key === "e" || code === "Numpad3") {
+        document.querySelector('input[value="Editing"]').checked = true;
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        submitForm();
+      }
+    });
+  </script>
 </head>
 <body>
-
-<header>
-  <h1>Image QC Review Dashboard</h1>
-</header>
-
-<div class="progress" id="progressText">Loading data, please wait...</div>
-
-<div class="container">
-  <div class="image-box">
-    <div class="meta" style="margin-bottom: 5px;">Input Image</div>
-    <img id="inputImg"  loading="lazy" alt="Input Image">
-    <div class="meta">Image ID: <span id="imgId">-</span></div>
+  <header>
+    <h1>Image QC Review Dashboard</h1>
+  </header>
+  <div class="progress" id="progressText">Loading data, please wait...</div>
+  <div class="container">
+    <div class="image-box">
+      <div class="meta" style="margin-bottom: 5px;">Input Image</div>
+      <img id="inputImg" loading="lazy" alt="Input Image">
+      <div class="meta">Image ID: <span id="imgId">-</span></div>
+    </div>
+    <div class="image-box">
+      <div class="meta" style="margin-bottom: 5px;">Output Image</div>
+      <img id="outputImg" loading="lazy" alt="Output Image">
+      <div class="meta">SKU ID: <span id="skuId">-</span></div>
+    </div>
   </div>
-  <div class="image-box">
-    <div class="meta" style="margin-bottom: 5px;">Output Image</div>
-    <img id="outputImg" class="zoomable" loading="lazy" alt="Output Image">
-    <div class="meta">SKU ID: <span id="skuId">-</span></div>
+  <div class="controls">
+    <div class="status-group">
+      <label><input type="radio" name="status" value="Done"> Done</label>
+      <label><input type="radio" name="status" value="Rejected"> Rejected</label>
+      <label><input type="radio" name="status" value="Editing"> Editing</label>
+    </div>
+    <button onclick="submitForm()">Next</button>
   </div>
-</div>
+  <iframe id="hiddenSubmitFrame" name="hiddenSubmitFrame"></iframe>
+  <script>
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQc6Bd5VEE067t02ubbCE_rAYzgOEN9ggvB8uH28TQKldJ5qGePkdSQeYbdvpbhl3lwb1yIhAr8685B/pub?gid=0&single=true&output=csv";
+    let data = [];
+    let currentIndex = 0;
+    Papa.parse(csvUrl, {
+      download: true,
+      header: true,
+      complete: function(results) {
+        data = results.data.filter(row => {
+          const keys = Object.keys(row);
+          const statusKey = keys.find(k => k.toLowerCase() === "status");
+          const status = statusKey ? (row[statusKey] || "").trim().toLowerCase() : "";
+          return !["done", "rejected", "editing"].includes(status);
+        });
+        showImage();
+        preloadNextImages();
+      }
+    });
+    function showImage() {
+      if (data.length === 0) {
+        document.getElementById("progressText").innerText = "🎉 All SKUs are already reviewed. No SKU left.";
+        document.getElementById("inputImg").style.display = "none";
+        document.getElementById("outputImg").style.display = "none";
+        document.querySelector(".controls").style.display = "none";
+        return;
+      }
 
-<div class="controls">
-  <div class="status-group">
-    <label><input type="radio" name="status" value="Done"> Done</label>
-    <label><input type="radio" name="status" value="Rejected"> Rejected</label>
-    <label><input type="radio" name="status" value="Editing"> Editing</label>
-  </div>
-  <button onclick="submitForm()">Next</button>
-</div>
-
-<iframe id="hiddenSubmitFrame" name="hiddenSubmitFrame"></iframe>
-
-<script>
-  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQc6Bd5VEE067t02ubbCE_rAYzgOEN9ggvB8uH28TQKldJ5qGePkdSQeYbdvpbhl3lwb1yIhAr8685B/pub?gid=0&single=true&output=csv";
-  let data = [];
-  let currentIndex = 0;
-
-  Papa.parse(csvUrl, {
-    download: true,
-    header: true,
-    complete: function(results) {
-      data = results.data.filter(row => {
-        const status = (row.status || '').trim().toLowerCase();
-        return !["done", "rejected", "editing"].includes(status);
-      });
-      showImage();
+      if (currentIndex >= data.length) {
+        document.getElementById("progressText").innerText = "✅ Review complete!";
+        return;
+      }
+      const row = data[currentIndex];
+      document.getElementById("inputImg").src = row["input_image_hres_url"];
+      document.getElementById("outputImg").src = row["output_image_hres_url"];
+      document.getElementById("imgId").innerText = row["image_id"];
+      document.getElementById("skuId").innerText = row["sku_id"];
+      document.getElementById("progressText").innerText = `Reviewed ${currentIndex + 1} of ${data.length}`;
       preloadNextImages();
     }
-  });
-
-  function showImage() {
-    if (currentIndex >= data.length) {
-      document.getElementById("progressText").innerText = "✅ Review complete!";
-      return;
+    function submitForm() {
+      const status = document.querySelector('input[name="status"]:checked');
+      if (!status) return alert("Please select a status.");
+      const row = data[currentIndex];
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'https://docs.google.com/forms/d/e/1FAIpQLSfAcGmJXwfrNV1xLUHNEYGRw7I4ErTNH5n6GhUltxDcAH008w/formResponse';
+      form.target = 'hiddenSubmitFrame';
+      const imageField = document.createElement('input');
+      imageField.type = 'hidden';
+      imageField.name = 'entry.331138758';
+      imageField.value = row["image_id"];
+      form.appendChild(imageField);
+      const skuField = document.createElement('input');
+      skuField.type = 'hidden';
+      skuField.name = 'entry.921407097';
+      skuField.value = row["sku_id"];
+      form.appendChild(skuField);
+      const statusField = document.createElement('input');
+      statusField.type = 'hidden';
+      statusField.name = 'entry.2036611691';
+      statusField.value = status.value;
+      form.appendChild(statusField);
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+      currentIndex++;
+      showImage();
+      document.querySelectorAll('input[name="status"]').forEach(el => el.checked = false);
     }
-    const row = data[currentIndex];
-    document.getElementById("inputImg").src = row["input_image_hres_url"];
-    document.getElementById("outputImg").src = row["output_image_hres_url"];
-    document.getElementById("imgId").innerText = row["image_id"];
-    document.getElementById("skuId").innerText = row["sku_id"];
-    document.getElementById("progressText").innerText = `Reviewed ${currentIndex + 1} of ${data.length}`;
-    preloadNextImages();
-  }
-
-  function submitForm() {
-    const status = document.querySelector('input[name="status"]:checked');
-    if (!status) return alert("Please select a status.");
-
-    const row = data[currentIndex];
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = 'https://docs.google.com/forms/d/e/1FAIpQLSfAcGmJXwfrNV1xLUHNEYGRw7I4ErTNH5n6GhUltxDcAH008w/formResponse';
-    form.target = 'hiddenSubmitFrame';
-
-    const imageField = document.createElement('input');
-    imageField.type = 'hidden';
-    imageField.name = 'entry.331138758';
-    imageField.value = row["image_id"];
-    form.appendChild(imageField);
-
-    const skuField = document.createElement('input');
-    skuField.type = 'hidden';
-    skuField.name = 'entry.921407097';
-    skuField.value = row["sku_id"];
-    form.appendChild(skuField);
-
-    const statusField = document.createElement('input');
-    statusField.type = 'hidden';
-    statusField.name = 'entry.2036611691';
-    statusField.value = status.value;
-    form.appendChild(statusField);
-
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
-
-    currentIndex++;
-    showImage();
-    document.querySelectorAll('input[name="status"]').forEach(el => el.checked = false);
-  }
-
-  function preloadNextImages() {
-    for (let i = 1; i <= 3; i++) {
-      if (currentIndex + i < data.length) {
-        const nextRow = data[currentIndex + i];
-        const preloadInput = new Image();
-        const preloadOutput = new Image();
-        preloadInput.src = nextRow["input_image_hres_url"];
-        preloadOutput.src = nextRow["output_image_hres_url"];
+    function preloadNextImages() {
+      for (let i = 1; i <= 3; i++) {
+        if (currentIndex + i < data.length) {
+          const nextRow = data[currentIndex + i];
+          const preloadInput = new Image();
+          const preloadOutput = new Image();
+          preloadInput.src = nextRow["input_image_hres_url"];
+          preloadOutput.src = nextRow["output_image_hres_url"];
+        }
       }
     }
-  }
-</script>
-
+  </script>
 </body>
 </html>

@@ -68,6 +68,7 @@
       justify-content: center;
       gap: 20px;
       margin-bottom: 20px;
+      flex-wrap: wrap;
     }
 
     .status-group label {
@@ -138,8 +139,11 @@
 <div class="controls" id="controlPanel" style="display: none;">
   <div class="status-group">
     <label><input type="radio" name="status" value="Done"> Done (1 / D)</label>
-    <label><input type="radio" name="status" value="Rejected"> Rejected (2 / R)</label>
-    <label><input type="radio" name="status" value="Editing"> Editing (3 / E)</label>
+    <label><input type="radio" name="status" value="Cropped"> Cropped (2 / C)</label>
+    <label><input type="radio" name="status" value="Marketing Material"> Marketing Material (3 / M)</label>
+    <label><input type="radio" name="status" value="Banner"> Banner (4 / B)</label>
+    <label><input type="radio" name="status" value="Vehicle Overlapped"> Vehicle Overlapped (5 / V)</label>
+    <label><input type="radio" name="status" value="Editing"> Editing (6 / E)</label>
   </div>
   <button onclick="submitForm()">Next (Enter)</button>
 </div>
@@ -157,7 +161,7 @@
     complete: function(results) {
       data = results.data.filter(row => {
         const status = (row.status || '').trim().toLowerCase();
-        return !["done", "rejected", "editing"].includes(status);
+        return !["done", "cropped", "marketing material", "banner", "vehicle overlapped", "editing"].includes(status);
       });
 
       if (data.length === 0) {
@@ -239,9 +243,15 @@
 
     if (key === "1" || key === "d" || code === "Numpad1") {
       document.querySelector('input[value="Done"]').checked = true;
-    } else if (key === "2" || key === "r" || code === "Numpad2") {
-      document.querySelector('input[value="Rejected"]').checked = true;
-    } else if (key === "3" || key === "e" || code === "Numpad3") {
+    } else if (key === "2" || key === "c" || code === "Numpad2") {
+      document.querySelector('input[value="Cropped"]').checked = true;
+    } else if (key === "3" || key === "m" || code === "Numpad3") {
+      document.querySelector('input[value="Marketing Material"]').checked = true;
+    } else if (key === "4" || key === "b" || code === "Numpad4") {
+      document.querySelector('input[value="Banner"]').checked = true;
+    } else if (key === "5" || key === "v" || code === "Numpad5") {
+      document.querySelector('input[value="Vehicle Overlapped"]').checked = true;
+    } else if (key === "6" || key === "e" || code === "Numpad6") {
       document.querySelector('input[value="Editing"]').checked = true;
     } else if (key === "enter") {
       event.preventDefault();

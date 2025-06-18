@@ -16,7 +16,7 @@
     header {
       background: #0057a3;
       color: white;
-      padding: 10px 0;
+      padding: 1px 0;
       text-align: center;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
@@ -54,8 +54,8 @@
     .status-group {
       display: flex;
       justify-content: center;
-      gap: 1px;
-      margin-bottom: 1px;
+      gap: 20px;
+      margin-bottom: 20px;
     }
     .status-group label {
       font-size: 1rem;
@@ -86,7 +86,7 @@
     }
     .progress {
       text-align: center;
-      margin-top: 1px;
+      margin-top: 15px;
       font-size: 1.1rem;
       color: #444;
     }
@@ -144,12 +144,22 @@
     Papa.parse(csvUrl, {
       download: true,
       header: true,
+      skipEmptyLines: true,
       complete: function(results) {
         data = results.data.filter(row => {
+          if (!row || Object.values(row).every(cell => cell.trim() === "")) return false;
           const keys = Object.keys(row);
           const statusKey = keys.find(k => k.toLowerCase() === "status");
           const status = statusKey ? (row[statusKey] || "").trim().toLowerCase() : "";
-          return !["done", "rejected", "editing"].includes(status);
+          return status === "" || !["done", "rejected", "editing"].includes(status);
+        });
+        if (data.length === 0) {
+          document.getElementById("progressText").innerText = "🎉 All SKUs are already reviewed. No SKU left.";
+          document.getElementById("inputImg").style.display = "none";
+          document.getElementById("outputImg").style.display = "none";
+          document.querySelector(".controls").style.display = "none";
+          return;
+        }
         });
         showImage();
         preloadNextImages();

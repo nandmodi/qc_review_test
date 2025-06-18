@@ -101,7 +101,18 @@
   <h1>Image QC Review Dashboard</h1>
 </header>
 
-<div class="progress" id="progressText">Loading data, please wait...</div>
+<div id="loginScreen" style="text-align: center; padding: 60px;">
+  <h2>Login to QC Review</h2>
+  <input type="email" id="userEmail" placeholder="Enter your Email ID" style="padding: 10px; width: 250px;"><br><br>
+  <button onclick="checkLogin()">Login</button>
+  <div id="loginError" style="color: red; margin-top: 10px;"></div>
+</div>
+
+<div id="userStatus" style="text-align: center; margin-top: 10px; display: none;">
+  Logged in as: <strong id="userEmailDisplay"></strong>
+</div>
+
+<div class="progress" id="progressText" style="display: none;">Loading data, please wait...</div>
 
 <div class="container" id="imageContainer" style="display: none;">
   <div class="image-box">
@@ -132,30 +143,52 @@
 
 <script>
   const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSuUcfgCukw0_2cu7Nvwao_f0zCFW2b8j0-X6WXBGqVjwchwy5jh0lZekk4UIMT53X-XktmlYqbE8r/pub?gid=0&single=true&output=csv";
+  const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSf5UlllmQHY_bFZTndwNStRk47PExlqpCmmCVmZ7E--tDRbpQ/formResponse';
+  const allowedEmails = ["nand@spyne.ai", "qc1@spyne.ai", "qc2@spyne.ai"]; // ✅ Add allowed email IDs here
+
   let data = [];
   let currentIndex = 0;
+  let loggedInUser = "";
 
-  Papa.parse(csvUrl, {
-    download: true,
-    header: true,
-    complete: function(results) {
-      data = results.data.filter(row => {
-        const status = (row.status || '').trim().toLowerCase();
-        return !["done", "cropped", "marketing material", "banner", "vehicle overlapped", "editing"].includes(status);
-      });
+  function checkLogin() {
+    const inputEmail = document.getElementById("userEmail").value.trim().toLowerCase();
 
-      if (data.length === 0) {
-        document.getElementById("progressText").innerText = "✅ All SKUs are already reviewed. No SKU left.";
-        document.getElementById("imageContainer").style.display = "none";
-        document.getElementById("controlPanel").style.display = "none";
-      } else {
-        document.getElementById("imageContainer").style.display = "flex";
-        document.getElementById("controlPanel").style.display = "block";
-        showImage();
-        preloadNextImages();
-      }
+    if (!allowedEmails.includes(inputEmail)) {
+      document.getElementById("loginError").innerText = "Unauthorized email ID!";
+      return;
     }
-  });
+
+    loggedInUser = inputEmail;
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("progressText").style.display = "block";
+    document.getElementById("userStatus").style.display = "block";
+    document.getElementById("userEmailDisplay").innerText = loggedInUser;
+    loadCSV();
+  }
+
+  function loadCSV() {
+    Papa.parse(csvUrl, {
+      download: true,
+      header: true,
+      complete: function(results) {
+        data = results.data.filter(row => {
+          const status = (row.status || '').trim().toLowerCase();
+          return !["done", "cropped", "marketing material", "banner", "vehicle overlapped", "editing"].includes(status);
+        });
+
+        if (data.length === 0) {
+          document.getElementById("progressText").innerText = "✅ All SKUs are already reviewed. No SKU left.";
+          document.getElementById("imageContainer").style.display = "none";
+          document.getElementById("controlPanel").style.display = "none";
+        } else {
+          document.getElementById("imageContainer").style.display = "flex";
+          document.getElementById("controlPanel").style.display = "block";
+          showImage();
+          preloadNextImages();
+        }
+      }
+    });
+  }
 
   function showImage() {
     if (currentIndex >= data.length) {
@@ -181,13 +214,14 @@
     const row = data[currentIndex];
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = 'https://docs.google.com/forms/d/e/1FAIpQLSf5UlllmQHY_bFZTndwNStRk47PExlqpCmmCVmZ7E--tDRbpQ/formResponse';
+    form.action = formUrl;
     form.target = 'hiddenSubmitFrame';
 
     const fields = [
       { name: 'entry.331138758', value: row["image_id"] },
       { name: 'entry.921407097', value: row["sku_id"] },
-      { name: 'entry.2036611691', value: status.value }
+      { name: 'entry.2036611691', value: status.value },
+      { name: 'entry.1234567890', value: loggedInUser } // <-- Replace with your actual email entry field ID
     ];
 
     fields.forEach(({ name, value }) => {

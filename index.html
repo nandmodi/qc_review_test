@@ -51,7 +51,7 @@
       responseElement.textContent = "⏳ Sending request...";
 
       try {
-        const res = await fetch('http://scraping-lb-596092473.us-east-1.elb.amazonaws.com:1338/webmine/api/v2/scrape/vdp', {
+        const res = await fetch('https://scraping-lb-596092473.us-east-1.elb.amazonaws.com:1338/webmine/api/v2/scrape/vdp', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

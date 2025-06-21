@@ -13,16 +13,20 @@
       background: #f4f7fa;
       color: #333;
     }
+
     header {
       background: #0057a3;
       color: white;
+      padding: 0;
       text-align: center;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
+
     header h1 {
       margin: 10px 0;
       font-size: 1.8em;
     }
+
     .container {
       display: none;
       justify-content: space-between;
@@ -30,10 +34,12 @@
       padding: 1px;
       gap: 1px;
     }
+
     .image-box {
       flex: 1;
       text-align: center;
     }
+
     .image-box img {
       width: 100%;
       height: auto;
@@ -41,15 +47,18 @@
       object-fit: contain;
       margin-bottom: 5px;
     }
+
     .meta {
       font-size: 0.95em;
       color: #666;
     }
+
     .controls {
       display: none;
       margin: 30px auto;
       text-align: center;
     }
+
     .status-group {
       display: flex;
       justify-content: center;
@@ -57,16 +66,24 @@
       margin-bottom: 20px;
       flex-wrap: wrap;
     }
+
     .status-group label {
       font-size: 1rem;
       background: #e9f0f7;
       padding: 10px 20px;
       border-radius: 6px;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
+
     .status-group input[type="radio"] {
       margin-right: 8px;
     }
+
+    .status-group label:hover {
+      background: #d0e5f5;
+    }
+
     button {
       padding: 12px 25px;
       font-size: 1rem;
@@ -76,16 +93,27 @@
       border-radius: 6px;
       cursor: pointer;
     }
+
+    button:hover {
+      background-color: #005bb5;
+    }
+
     .progress {
       text-align: center;
-      margin-top: 15px;
+      margin-top: 10px;
       font-size: 1.1rem;
       color: #444;
     }
+
+    iframe {
+      display: none;
+    }
+
     #loginScreen {
       text-align: center;
       margin-top: 50px;
     }
+
     #loginScreen select {
       padding: 10px;
       font-size: 1em;
@@ -99,6 +127,7 @@
 </header>
 
 <p id="progressText" class="progress"></p>
+<p id="loggedEmail" class="progress"></p>
 
 <div id="loginScreen">
   <h2>Login to Start QC Review</h2>
@@ -107,6 +136,7 @@
     <option value="samir.ansari@spyne.co.in">samir.ansari@spyne.co.in</option>
     <option value="ajay.prajapati@spyne.co.in">ajay.prajapati@spyne.co.in</option>
     <option value="sneha.swami@spyne.co.in">sneha.swami@spyne.co.in</option>
+    <option value="rahul.kumar1@spyne.co.in">rahul.kumar1@spyne.co.in</option>
   </select>
   <br><br>
   <button onclick="login()">Start Review</button>
@@ -137,9 +167,10 @@
   <button onclick="submitForm()">Next</button>
 </div>
 
+<iframe id="hiddenSubmitFrame" name="hiddenSubmitFrame"></iframe>
+
 <script>
-  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMmaZrzZnLS4cR-1oV9lK5wfbAsJ2V9Bl8YFH0Q3a62qlfd6fZaLDlokCzOyj6JUVQBcWfcghClwEg/pub?output=csv";
-  const submitUrl = "https://script.google.com/macros/s/AKfycbwbQO5OfXrCTCphzh7ql_cOin_b_jirbBkD7DYFMYO2rcEOUKy9etN8izahJtjxDq80/exec";
+  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSrxjy4JG6xuSjNr57wmDI7SecAI2PSFonGooDa7P9lnMCll-Gh-Hs917tzZhwvxhFrtOiEHkRiGPhq/pub?gid=0&single=true&output=csv";
   let data = [];
   let currentIndex = 0;
   let userEmail = "";
@@ -155,6 +186,7 @@
 
     document.getElementById("loginScreen").style.display = "none";
     document.getElementById("progressText").innerText = "📦 Loading data...";
+    document.getElementById("loggedEmail").innerText = `👤 Logged in as: ${userEmail}`;
     loadCSVData();
   }
 
@@ -198,58 +230,71 @@
   }
 
   function submitForm() {
-    const statusInput = document.querySelector('input[name="status"]:checked');
-    if (!statusInput) {
-      alert("Please select a status.");
+    if (!userEmail || !userEmail.includes("@")) {
+      alert("You are not logged in. Please refresh and log in.");
       return;
     }
 
-    const row = data[currentIndex];
-    const payload = {
-      image_id: row["image_id"],
-      sku_id: row["sku_id"],
-      status: statusInput.value,
-      email: userEmail
-    };
+    const status = document.querySelector('input[name="status"]:checked');
+    if (!status) return alert("Please select a status.");
 
-    fetch(submitUrl, {
-      method: "POST",
-      body: JSON.stringify(payload),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-    .then(res => res.text())
-    .then(() => {
-      currentIndex++;
-      showImage();
-      document.querySelectorAll('input[name="status"]').forEach(el => el.checked = false);
-    })
-    .catch(err => {
-      console.error("Submit failed:", err);
-      alert("Failed to submit. Please try again.");
+    const row = data[currentIndex];
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'https://docs.google.com/forms/d/e/1FAIpQLSerZe2eJiPV7RVmdWgY_CMeA1WsK8oKxSfapnAgiHQAf-xn_g/formResponse';
+    form.target = 'hiddenSubmitFrame';
+
+    const fields = [
+      { name: 'entry.331138758', value: row["image_id"] },
+      { name: 'entry.921407097', value: row["sku_id"] },
+      { name: 'entry.2036611691', value: status.value },
+      { name: 'entry.1651774948', value: userEmail }
+    ];
+
+    fields.forEach(({ name, value }) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
     });
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+
+    currentIndex++;
+    showImage();
+    document.querySelectorAll('input[name="status"]').forEach(el => el.checked = false);
   }
 
   function preloadNextImages() {
     for (let i = 1; i <= 3; i++) {
       if (currentIndex + i < data.length) {
-        const next = data[currentIndex + i];
-        new Image().src = next["input_image_hres_url"];
-        new Image().src = next["output_image_hres_url"];
+        const nextRow = data[currentIndex + i];
+        new Image().src = nextRow["input_image_hres_url"];
+        new Image().src = nextRow["output_image_hres_url"];
       }
     }
   }
 
   document.addEventListener("keydown", function(event) {
     const key = event.key.toLowerCase();
-    if (key === "1" || key === "d") document.querySelector('input[value="Done"]').checked = true;
-    else if (key === "2" || key === "c") document.querySelector('input[value="Cropped"]').checked = true;
-    else if (key === "3" || key === "m") document.querySelector('input[value="Marketing Material"]').checked = true;
-    else if (key === "4" || key === "b") document.querySelector('input[value="Banner"]').checked = true;
-    else if (key === "5" || key === "v") document.querySelector('input[value="Vehicle Overlapped"]').checked = true;
-    else if (key === "6" || key === "e") document.querySelector('input[value="Editing"]').checked = true;
-    else if (key === "enter") {
+    const code = event.code;
+
+    if (key === "1" || key === "d" || code === "Numpad1") {
+      document.querySelector('input[value="Done"]').checked = true;
+    } else if (key === "2" || key === "c" || code === "Numpad2") {
+      document.querySelector('input[value="Cropped"]').checked = true;
+    } else if (key === "3" || key === "m" || code === "Numpad3") {
+      document.querySelector('input[value="Marketing Material"]').checked = true;
+    } else if (key === "4" || key === "b" || code === "Numpad4") {
+      document.querySelector('input[value="Banner"]').checked = true;
+    } else if (key === "5" || key === "v" || code === "Numpad5") {
+      document.querySelector('input[value="Vehicle Overlapped"]').checked = true;
+    } else if (key === "6" || key === "e" || code === "Numpad6") {
+      document.querySelector('input[value="Editing"]').checked = true;
+    } else if (key === "enter") {
       event.preventDefault();
       submitForm();
     }

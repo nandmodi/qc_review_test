@@ -23,8 +23,8 @@
   .filters {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-start;  /* Align items to start */
-    align-items: flex-end;        /* Align inputs and button to baseline */
+    justify-content: flex-start;
+    align-items: flex-end;
     gap: 20px 30px;
     margin-bottom: 30px;
   }
@@ -47,7 +47,7 @@
     border-radius: 6px;
     transition: border-color 0.3s ease;
     outline-offset: 2px;
-    margin-bottom: 4px; /* Vertical spacing for better alignment */
+    margin-bottom: 4px;
   }
   .filters input[type="date"]:focus,
   .filters select:focus {
@@ -56,7 +56,7 @@
     box-shadow: 0 0 6px rgba(0, 123, 255, 0.4);
   }
   .filters > div button {
-    margin-top: 22px; /* Align button vertically with inputs */
+    margin-top: 22px;
     background-color: #007bff;
     border: none;
     color: #fff;
@@ -117,10 +117,8 @@
   a.link-button:visited {
     color: #0056b3;
   }
-
-  /* FULLSCREEN MODAL */
   #modal {
-    display: none; /* Hidden by default */
+    display: none;
     position: fixed;
     z-index: 10000;
     top: 0; left: 0;
@@ -136,7 +134,6 @@
     background: #fff;
     width: 100vw;
     height: 100vh;
-    max-width: none;
     border-radius: 0;
     box-shadow: none;
     display: flex;
@@ -252,6 +249,8 @@
   </div>
 </div>
 
+<iframe name="hidden_iframe" style="display:none;"></iframe>
+
 <script>
   const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vThoeXNovzUYQaHoFqHYY8p4hxrGTJWUPF8dQs0cinxvypfUVwAzFu74l06jhqXm0x611kRke13fa2t/pub?gid=0&single=true&output=csv';
   const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeQH6R9-rYr1Kh2rwUBKu7uGvJAkRrvx8fnxF6jfkac7sNL2A/formResponse';
@@ -279,7 +278,17 @@
           skipEmptyLines: true,
           transformHeader: h => h.trim(),
           complete: results => {
-            globalData = results.data;
+            const reviewedSpinIDs = new Set();
+            results.data.forEach(row => {
+              const reviewedId = row['Status']?.trim();
+              if (reviewedId) reviewedSpinIDs.add(reviewedId);
+            });
+
+            globalData = results.data.filter(row => {
+              const spinId = row['Spin_ID']?.trim();
+              return spinId && !reviewedSpinIDs.has(spinId);
+            });
+
             populateDropdowns();
             applyFilters();
           },
@@ -320,16 +329,12 @@
       if (!rawDate) return false;
       if (start && rawDate < start) return false;
       if (end && rawDate > end) return false;
-      if (user && (!row['User'] || row['User'].toLowerCase() !== user)) return false;
-      if (ent && (!row['Enterprise'] || row['Enterprise'].toLowerCase() !== ent)) return false;
+      if (user && row['User'].toLowerCase() !== user) return false;
+      if (ent && row['Enterprise'].toLowerCase() !== ent) return false;
 
       const issues = (row['Issues'] || '').toLowerCase().trim();
-
-      if (issueFilter === 'nullblank') {
-        if (issues.length > 0) return false;
-      } else if (issueFilter && issueFilter !== '') {
-        if (!issues.includes(issueFilter)) return false;
-      }
+      if (issueFilter === 'nullblank' && issues.length > 0) return false;
+      if (issueFilter && issueFilter !== 'nullblank' && !issues.includes(issueFilter)) return false;
 
       return true;
     });
@@ -348,17 +353,13 @@
     </tr>`;
 
     data.forEach((row, i) => {
-      const dateVal = escapeHtml(row['Date'] ? row['Date'].split('T')[0].trim() : '');
+      const dateVal = escapeHtml(row['Date']?.split('T')[0].trim());
       const spinId = escapeHtml(row['Spin_ID'] || '');
       const skuId = escapeHtml(row['SKU_ID'] || '');
       const enterprise = escapeHtml(row['Enterprise'] || '');
       const user = escapeHtml(row['User'] || '');
       const spinURL = row['spin_url'] || '';
       const issuesHtml = escapeHtml(row['Issues'] || '').replace(/\n/g, '<br>');
-
-      const submitted = row._submitted || false;
-      const linkClass = submitted ? 'link-button disabled' : 'link-button';
-      const linkStyle = submitted ? 'pointer-events:none; color:gray; text-decoration:none;' : '';
 
       html += `<tr>
         <td>${dateVal}</td>
@@ -367,7 +368,7 @@
         <td>${issuesHtml}</td>
         <td>${enterprise}</td>
         <td>${user}</td>
-        <td><a class="${linkClass}" style="${linkStyle}" onclick="openModal(${i})" title="View Spin" href="javascript:void(0)">View Spin</a></td>
+        <td><a class="link-button" onclick="openModal(${i})" href="javascript:void(0)">View Spin</a></td>
       </tr>`;
     });
 
@@ -378,13 +379,8 @@
   function openModal(i) {
     currentModalIndex = i;
     const row = filteredData[i];
-    const url = row['spin_url'];
-    if (!url) return alert('Spin URL not available');
-    document.getElementById('modalIframe').src = url;
-
-    const issuesText = row['Issues'] || 'No issues reported.';
-    document.getElementById('modalIssues').textContent = issuesText;
-
+    document.getElementById('modalIframe').src = row['spin_url'];
+    document.getElementById('modalIssues').textContent = row['Issues'] || 'No issues reported.';
     document.getElementById('modalComment').value = '';
     document.getElementById('modal').style.display = 'flex';
   }
@@ -407,47 +403,35 @@
   });
 
   function submitFormRow(i, commentValue) {
-    try {
-      const row = filteredData[i];
-      const spinId = escapeHtmlAttr(row['Spin_ID'] || '');
-      const skuId = escapeHtmlAttr(row['SKU_ID'] || '');
-      const enterprise = escapeHtmlAttr(row['Enterprise'] || '');
-      const user = escapeHtmlAttr(row['User'] || '');
-      const issue = escapeHtmlAttr(row['Issues'] || '');
-      const comment = escapeHtmlAttr(commentValue || '');
-      const spinUrl = escapeHtmlAttr(row['spin_url'] || '');
+    const row = filteredData[i];
+    const form = document.createElement("form");
+    form.action = FORM_URL;
+    form.method = "POST";
+    form.target = "hidden_iframe";
+    form.style.display = "none";
 
-      const form = document.createElement("form");
-      form.action = FORM_URL;
-      form.method = "POST";
-      form.target = "hidden_iframe";
-      form.style.display = "none";
+    form.innerHTML = `
+      <input name="entry.1125049159" value="${escapeHtmlAttr(row['Spin_ID'])}">
+      <input name="entry.703277665" value="${escapeHtmlAttr(row['SKU_ID'])}">
+      <input name="entry.1815472287" value="${escapeHtmlAttr(row['Enterprise'])}">
+      <input name="entry.582537694" value="${escapeHtmlAttr(row['User'])}">
+      <input name="entry.575622617" value="${escapeHtmlAttr(row['Issues'])}">
+      <input name="entry.1751143375" value="${escapeHtmlAttr(commentValue)}">
+      <input name="entry.1372347436" value="${escapeHtmlAttr(row['spin_url'])}">
+    `;
 
-      form.innerHTML = `
-        <input name="entry.1125049159" value="${spinId}">
-        <input name="entry.703277665" value="${skuId}">
-        <input name="entry.1815472287" value="${enterprise}">
-        <input name="entry.582537694" value="${user}">
-        <input name="entry.575622617" value="${issue}">
-        <input name="entry.1751143375" value="${comment}">
-        <input name="entry.1372347436" value="${spinUrl}">
-      `;
-
-      const iframe = document.getElementsByName('hidden_iframe')[0];
-      if (iframe) {
-        iframe.onload = function () {
-          filteredData[i]._submitted = true;
-          renderTable(filteredData);
-          closeModal();
-        };
-      }
-
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-    } catch (error) {
-      console.error('Error submitting form row', i, error);
+    const iframe = document.getElementsByName('hidden_iframe')[0];
+    if (iframe) {
+      iframe.onload = () => {
+        filteredData[i]._submitted = true;
+        renderTable(filteredData);
+        closeModal();
+      };
     }
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
   }
 
   window.onload = () => {
@@ -459,8 +443,6 @@
     loadAndFilterCSV();
   };
 </script>
-
-<iframe name="hidden_iframe" style="display:none;"></iframe>
 
 </body>
 </html>

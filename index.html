@@ -81,9 +81,9 @@
       <option>Saurabh Pandey</option>
     </select>
     <div class="section">
-      <label>Date: </label><select id="dateFilter"></select>
-      <label>Enterprise: </label><select id="enterpriseFilter"></select>
-      <label>QC User: </label><select id="qcUserFilter"></select>
+      <label>Date: </label><select id="dateFilter"><option value="">ALL</option></select>
+      <label>Enterprise: </label><select id="enterpriseFilter"><option value="">ALL</option></select>
+      <label>QC User: </label><select id="qcUserFilter"><option value="">ALL</option></select>
     </div>
     <button onclick="loadFilteredData()">Submit</button>
   </div>
@@ -135,8 +135,8 @@
         const rowUser = (row["User"] || '').trim().toLowerCase();
 
         return (
-          (!date || rowDate === date) ||
-          (!enterprise || rowEnterprise === enterprise) ||
+          (!date || rowDate === date) &&
+          (!enterprise || rowEnterprise === enterprise) &&
           (!qcUser || rowUser === qcUser)
         );
       });

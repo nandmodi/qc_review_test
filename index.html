@@ -166,9 +166,37 @@
     }
 
     function submitAndNext() {
-      const comment = encodeURIComponent(document.getElementById('qcComment').value || "");
-      const email = encodeURIComponent(document.getElementById('userName').textContent || "");
-      const url = `${FORM_PREFILL}&entry.1273558996=${comment}&entry.923745551=${email}`;
+  const comment = document.getElementById('qcComment').value || "";
+  const email = document.getElementById('loginID').value || "";
+
+  const formData = new FormData();
+  formData.append('entry.1273558996', comment);
+  formData.append('entry.923745551', email);
+
+  fetch('https://docs.google.com/forms/d/e/1FAIpQLSfef8RvJUeIyG3lHDeohpfuHI8Q2gagMvtBfIIdCLmg_5VfnA/formResponse', {
+    method: 'POST',
+    mode: 'no-cors',
+    body: formData
+  }).then(() => {
+    if (currentIndex < filteredData.length - 1) {
+      currentIndex++;
+      showReview();
+    } else {
+      alert("All entries reviewed.");
+    }
+  }).catch(() => {
+    alert("Error submitting form");
+  });
+}&entry.1273558996=${comment}&entry.923745551=${email}`;
+  window.open(url, '_blank');
+
+  if (currentIndex < filteredData.length - 1) {
+    currentIndex++;
+    showReview();
+  } else {
+    alert("All entries reviewed.");
+  }
+}&entry.1273558996=${comment}&entry.923745551=${email}`;
       window.open(url, '_blank');
 
       if (currentIndex < filteredData.length - 1) {

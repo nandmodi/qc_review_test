@@ -1,448 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>360 QC Review Dashboard</title>
-<link rel="icon" href="https://spyne-prod-ai.s3.us-east-1.amazonaws.com/ai-dataset/2025/favicon.ico" type="image/x-icon" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-<style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f4f7fa;
-    color: #333;
-    padding: 40px 20px;
-    margin: 0;
-  }
-  h2 {
-    font-weight: 700;
-    color: #222;
-    margin-bottom: 30px;
-    text-align: center;
-    letter-spacing: 1.2px;
-  }
-  .filters {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    align-items: flex-end;
-    gap: 20px 30px;
-    margin-bottom: 30px;
-  }
-  .filters > div {
-    display: flex;
-    align-items: center;
-  }
-  .filters label {
-    display: flex;
-    flex-direction: column;
-    font-size: 14px;
-    color: #555;
-    min-width: 140px;
-  }
-  .filters label input,
-  .filters label select {
-    padding: 10px 14px;
-    font-size: 15px;
-    border: 1.8px solid #ccc;
-    border-radius: 6px;
-    transition: border-color 0.3s ease;
-    outline-offset: 2px;
-    margin-bottom: 4px;
-  }
-  .filters input[type="date"]:focus,
-  .filters select:focus {
-    border-color: #007bff;
-    outline: none;
-    box-shadow: 0 0 6px rgba(0, 123, 255, 0.4);
-  }
-  .filters > div button {
-    margin-top: 22px;
-    background-color: #007bff;
-    border: none;
-    color: #fff;
-    font-weight: 600;
-    padding: 12px 25px;
-    font-size: 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
-  }
-  .filters > div button:hover:not(:disabled) {
-    background-color: #0056b3;
-  }
-  .filters > div button:disabled {
-    background-color: #a3a3a3;
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-  #table-container {
-    overflow-x: auto;
-    box-shadow: 0 4px 20px rgb(0 0 0 / 0.05);
-    border-radius: 10px;
-    background: #fff;
-    padding: 20px;
-  }
-  table {
-    border-collapse: separate;
-    border-spacing: 0 8px;
-    width: 100%;
-    min-width: 900px;
-    font-size: 14.5px;
-    color: #444;
-  }
-  th, td {
-    padding: 14px 18px;
-    text-align: left;
-    vertical-align: middle;
-    background: #fff;
-    border: none;
-  }
-  th {
-    background-color: #e9f0ff;
-    font-weight: 600;
-    color: #007bff;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  tr:hover td {
-    background-color: #f5faff;
-  }
-  a.link-button {
-    color: #007bff;
-    cursor: pointer;
-    font-weight: 600;
-    text-decoration: underline;
-  }
-  a.link-button:visited {
-    color: #0056b3;
-  }
-  #modal {
-    display: none;
-    position: fixed;
-    z-index: 10000;
-    top: 0; left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0,0,0,0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-  #modalContent {
-    background: #fff;
-    width: 100vw;
-    height: 100vh;
-    border-radius: 0;
-    box-shadow: none;
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 10001;
-  }
-  #modalHeader {
-    padding: 10px 20px;
-    font-weight: 700;
-    font-size: 18px;
-    color: #007bff;
-    border-bottom: 1px solid #ccc;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #f9fbff;
-  }
-  #closeModal {
-    cursor: pointer;
-    font-size: 28px;
-    font-weight: 700;
-    color: #007bff;
-    border: none;
-    background: none;
-  }
-  #modalIssues {
-    padding: 15px 20px;
-    background: #fff9e6;
-    color: #8a6d00;
-    font-size: 16px;
-    font-weight: 600;
-    border-bottom: 1px solid #f5e1a4;
-    max-height: 100px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-  }
-  #modalIframe {
-    flex: 1;
-    border: none;
-    width: 100%;
-    height: auto;
-  }
-  #modalFooter {
-    padding: 12px 20px;
-    border-top: 1px solid #ccc;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    background: #f9fbff;
-  }
-  #modalFooter textarea {
-    flex: 1;
-    resize: vertical;
-    min-height: 60px;
-    font-size: 16px;
-    padding: 12px 15px;
-    border-radius: 6px;
-    border: 1.8px solid #ccc;
-    transition: border-color 0.3s ease;
-  }
-  #modalFooter textarea:focus {
-    border-color: #007bff;
-    outline: none;
-    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>QC Review Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border: 1px solid #ccc;
+    }
+    .section {
+      margin-bottom: 20px;
+    }
+    label {
+      font-weight: bold;
+    }
+    select, input {
+      padding: 8px;
+      margin: 5px;
+      width: 200px;
+    }
+    .images {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+    }
+    .images img {
+      width: 30%;
+      height: auto;
+      border: 1px solid #000;
+    }
+    .nav-buttons, .form-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .nav-buttons button, .submit-form a {
+      padding: 10px 20px;
+      margin: 10px;
+      background: #007BFF;
+      color: white;
+      border: none;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .submit-form a {
+      background: #28a745;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .top-bar div {
+      margin: 10px;
+    }
+  </style>
 </head>
 <body>
-
-<h2>360 QC Review Dashboard</h2>
-
-<div class="filters">
-  <label>Start Date: <input type="date" id="startDate" /></label>
-  <label>End Date: <input type="date" id="endDate" /></label>
-  <label>User:
-    <select id="userFilter"><option value="">All</option></select>
-  </label>
-  <label>Enterprise:
-    <select id="enterpriseFilter"><option value="">All</option></select>
-  </label>
-  <label>Issue:
-    <select id="issueFilter">
-      <option value="">All</option>
-      <option value="nullblank">Null/Blank</option>
-      <option value="blocker">Blocker</option>
-      <option value="high">High</option>
-      <option value="low">Low</option>
+  <div class="container" id="login-section">
+    <h2>Login ID</h2>
+    <select id="loginID">
+      <option value="">Select Login ID</option>
+      <option>Nand Kishor</option>
+      <option>Ranbir Manoranjan</option>
+      <option>Nitin kumar</option>
+      <option>Praveen Agarwal</option>
+      <option>Raj Tripatrhi</option>
+      <option>Rohit Chahuhan</option>
+      <option>Saurabh Pandey</option>
     </select>
-  </label>
-  <div>
-    <button onclick="applyFilters()">Filter</button>
-  </div>
-</div>
-
-<div id="table-container">Loading...</div>
-
-<!-- Fullscreen Modal -->
-<div id="modal">
-  <div id="modalContent">
-    <div id="modalHeader">
-      <div>Spin Viewer</div>
-      <button id="closeModal" title="Close">&times;</button>
+    <div class="section">
+      <label>Date: </label><select id="dateFilter"></select>
+      <label>Enterprise: </label><select id="enterpriseFilter"></select>
+      <label>QC User: </label><select id="qcUserFilter"></select>
     </div>
-    <div id="modalIssues"></div>
-    <iframe id="modalIframe" src=""></iframe>
-    <div id="modalFooter">
-      <textarea id="modalComment" placeholder="Enter your comment here..."></textarea>
-      <button id="modalSubmitBtn">Submit</button>
+    <button onclick="loadFilteredData()">Submit</button>
+  </div>
+
+  <div class="container" id="review-section" style="display:none">
+    <div class="top-bar">
+      <div><strong>User Name:</strong> <span id="userName"></span></div>
+      <div><strong>Issue:</strong> <span id="issue"></span></div>
+      <div><strong>Enterprise:</strong> <span id="enterprise"></span></div>
+      <div><strong>Date:</strong> <span id="date"></span></div>
+      <div><strong>Sku ID:</strong> <span id="sku"></span></div>
+      <div><strong>Image ID:</strong> <span id="imageID"></span></div>
+    </div>
+    <div class="images">
+      <img id="left" src="" alt="left_path">
+      <img id="middle" src="" alt="middle_path">
+      <img id="right" src="" alt="right_path">
+    </div>
+    <div class="form-section">
+      <div>
+        <strong>QC Comment:</strong>
+        <a id="prefillForm" target="_blank">Submit QC Comment</a>
+      </div>
+      <div class="nav-buttons">
+        <button onclick="prevEntry()">Previous</button>
+        <button onclick="nextEntry()">Next</button>
+        <button onclick="exitToLogin()">Exit</button>
+      </div>
     </div>
   </div>
-</div>
 
-<iframe name="hidden_iframe" style="display:none;"></iframe>
+  <script>
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSvZvX_emLq4BOJ4X4OfNeOV8V92L83kU5wbIgXK4o6hc7JRnoqeg9Wwv3Cd2FCa1dBdT-Z0kf7tNXZ/pub?gid=0&single=true&output=csv";
+    const FORM_PREFILL = "https://docs.google.com/forms/d/e/1FAIpQLSfef8RvJUeIyG3lHDeohpfuHI8Q2gagMvtBfIIdCLmg_5VfnA/viewform?usp=pp_url";
 
-<script>
-  const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vThoeXNovzUYQaHoFqHYY8p4hxrGTJWUPF8dQs0cinxvypfUVwAzFu74l06jhqXm0x611kRke13fa2t/pub?gid=0&single=true&output=csv';
-  const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeQH6R9-rYr1Kh2rwUBKu7uGvJAkRrvx8fnxF6jfkac7sNL2A/formResponse';
+    let data = [];
+    let filteredData = [];
+    let currentIndex = 0;
 
-  let globalData = [];
-  let filteredData = [];
-  let currentModalIndex = null;
+    function loadFilteredData() {
+      const loginID = document.getElementById('loginID').value;
+      const date = document.getElementById('dateFilter').value;
+      const enterprise = document.getElementById('enterpriseFilter').value;
+      const qcUser = document.getElementById('qcUserFilter').value;
 
-  function escapeHtml(text) {
-    if (!text) return '';
-    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  }
+      filteredData = data.filter(row =>
+        (!date || row["Date"] === date) &&
+        (!enterprise || row["Enterprise"] === enterprise) &&
+        (!qcUser || row["Qc-User"] === qcUser)
+      );
 
-  function escapeHtmlAttr(text) {
-    if (!text) return '';
-    return text.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  }
+      if (filteredData.length > 0) {
+        currentIndex = 0;
+        showReview();
+        document.getElementById("login-section").style.display = "none";
+        document.getElementById("review-section").style.display = "block";
+      } else {
+        alert("No matching records found.");
+      }
+    }
 
-  function loadAndFilterCSV() {
-    fetch(CSV_URL)
-      .then(res => res.text())
-      .then(csv => {
-        Papa.parse(csv, {
-          header: true,
-          skipEmptyLines: true,
-          transformHeader: h => h.trim(),
-          complete: results => {
-            const reviewedSpinIDs = new Set();
-            results.data.forEach(row => {
-              const reviewedId = row['Status']?.trim();
-              if (reviewedId) reviewedSpinIDs.add(reviewedId);
-            });
+    function showReview() {
+      const row = filteredData[currentIndex];
+      document.getElementById('userName').textContent = row["User Name"];
+      document.getElementById('issue').textContent = row["Issue"];
+      document.getElementById('enterprise').textContent = row["Enterprise"];
+      document.getElementById('date').textContent = row["Date"];
+      document.getElementById('sku').textContent = row["Sku ID"];
+      document.getElementById('imageID').textContent = row["Image ID"];
+      document.getElementById('left').src = row["left_path"];
+      document.getElementById('middle').src = row["middle_path"];
+      document.getElementById('right').src = row["right_path"];
 
-            globalData = results.data.filter(row => {
-              const spinId = row['Spin_ID']?.trim();
-              return spinId && !reviewedSpinIDs.has(spinId);
-            });
+      const comment = encodeURIComponent(row["Issue"] || "");
+      const email = encodeURIComponent(row["Qc-User"] || "");
+      document.getElementById('prefillForm').href = `${FORM_PREFILL}&entry.1273558996=${comment}&entry.923745551=${email}`;
+    }
 
-            populateDropdowns();
-            applyFilters();
-          },
-          error: err => {
-            document.getElementById('table-container').innerText = 'Error loading data.';
-            console.error('CSV load error:', err);
-          }
-        });
-      })
-      .catch(err => {
-        document.getElementById('table-container').innerText = 'Error fetching CSV.';
-        console.error('Fetch error:', err);
+    function prevEntry() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        showReview();
+      }
+    }
+
+    function nextEntry() {
+      if (currentIndex < filteredData.length - 1) {
+        currentIndex++;
+        showReview();
+      }
+    }
+
+    function exitToLogin() {
+      document.getElementById("review-section").style.display = "none";
+      document.getElementById("login-section").style.display = "block";
+    }
+
+    function populateDropdowns(data) {
+      const dates = new Set(), enterprises = new Set(), users = new Set();
+      data.forEach(row => {
+        if (row["Date"]) dates.add(row["Date"]);
+        if (row["Enterprise"]) enterprises.add(row["Enterprise"]);
+        if (row["Qc-User"]) users.add(row["Qc-User"]);
       });
-  }
-
-  function populateDropdowns() {
-    const userSet = new Set(), entSet = new Set();
-    globalData.forEach(row => {
-      if (row['User']) userSet.add(row['User']);
-      if (row['Enterprise']) entSet.add(row['Enterprise']);
-    });
-    document.getElementById('userFilter').innerHTML =
-      '<option value="">All</option>' + [...userSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
-    document.getElementById('enterpriseFilter').innerHTML =
-      '<option value="">All</option>' + [...entSet].map(v => `<option value="${v.trim()}">${escapeHtml(v)}</option>`).join('');
-  }
-
-  function applyFilters() {
-    const start = document.getElementById('startDate').value;
-    const end = document.getElementById('endDate').value;
-    const user = document.getElementById('userFilter').value.toLowerCase();
-    const ent = document.getElementById('enterpriseFilter').value.toLowerCase();
-    const issueFilter = document.getElementById('issueFilter').value.toLowerCase();
-
-    filteredData = globalData.filter(row => {
-      if (!row['User']) return false;
-      const rawDate = row['Date'] ? row['Date'].split('T')[0].trim() : '';
-      if (!rawDate) return false;
-      if (start && rawDate < start) return false;
-      if (end && rawDate > end) return false;
-      if (user && row['User'].toLowerCase() !== user) return false;
-      if (ent && row['Enterprise'].toLowerCase() !== ent) return false;
-
-      const issues = (row['Issues'] || '').toLowerCase().trim();
-      if (issueFilter === 'nullblank' && issues.length > 0) return false;
-      if (issueFilter && issueFilter !== 'nullblank' && !issues.includes(issueFilter)) return false;
-
-      return true;
-    });
-
-    renderTable(filteredData);
-  }
-
-  function renderTable(data) {
-    if (!data.length) {
-      document.getElementById('table-container').innerHTML = 'No matching data.';
-      return;
+      fillSelect("dateFilter", [...dates]);
+      fillSelect("enterpriseFilter", [...enterprises]);
+      fillSelect("qcUserFilter", [...users]);
     }
 
-    let html = `<table id="qc-table"><tr>
-      <th>Date</th><th>Spin_ID</th><th>SKU_ID</th><th>Issues</th><th>Enterprise</th><th>User</th><th>Spin URL</th>
-    </tr>`;
-
-    data.forEach((row, i) => {
-      const dateVal = escapeHtml(row['Date']?.split('T')[0].trim());
-      const spinId = escapeHtml(row['Spin_ID'] || '');
-      const skuId = escapeHtml(row['SKU_ID'] || '');
-      const enterprise = escapeHtml(row['Enterprise'] || '');
-      const user = escapeHtml(row['User'] || '');
-      const spinURL = row['spin_url'] || '';
-      const issuesHtml = escapeHtml(row['Issues'] || '').replace(/\n/g, '<br>');
-
-      html += `<tr>
-        <td>${dateVal}</td>
-        <td>${spinId}</td>
-        <td>${skuId}</td>
-        <td>${issuesHtml}</td>
-        <td>${enterprise}</td>
-        <td>${user}</td>
-        <td><a class="link-button" onclick="openModal(${i})" href="javascript:void(0)">View Spin</a></td>
-      </tr>`;
-    });
-
-    html += '</table>';
-    document.getElementById('table-container').innerHTML = html;
-  }
-
-  function openModal(i) {
-    currentModalIndex = i;
-    const row = filteredData[i];
-    document.getElementById('modalIframe').src = row['spin_url'];
-    document.getElementById('modalIssues').textContent = row['Issues'] || 'No issues reported.';
-    document.getElementById('modalComment').value = '';
-    document.getElementById('modal').style.display = 'flex';
-  }
-
-  function closeModal() {
-    document.getElementById('modal').style.display = 'none';
-    document.getElementById('modalIframe').src = '';
-  }
-
-  document.getElementById('closeModal').addEventListener('click', closeModal);
-
-  document.getElementById('modalSubmitBtn').addEventListener('click', () => {
-    if (currentModalIndex === null) return;
-    const comment = document.getElementById('modalComment').value.trim();
-    if (!comment) {
-      alert('Please enter a comment before submitting.');
-      return;
-    }
-    submitFormRow(currentModalIndex, comment);
-  });
-
-  function submitFormRow(i, commentValue) {
-    const row = filteredData[i];
-    const form = document.createElement("form");
-    form.action = FORM_URL;
-    form.method = "POST";
-    form.target = "hidden_iframe";
-    form.style.display = "none";
-
-    form.innerHTML = `
-      <input name="entry.1125049159" value="${escapeHtmlAttr(row['Spin_ID'])}">
-      <input name="entry.703277665" value="${escapeHtmlAttr(row['SKU_ID'])}">
-      <input name="entry.1815472287" value="${escapeHtmlAttr(row['Enterprise'])}">
-      <input name="entry.582537694" value="${escapeHtmlAttr(row['User'])}">
-      <input name="entry.575622617" value="${escapeHtmlAttr(row['Issues'])}">
-      <input name="entry.1751143375" value="${escapeHtmlAttr(commentValue)}">
-      <input name="entry.1372347436" value="${escapeHtmlAttr(row['spin_url'])}">
-    `;
-
-    const iframe = document.getElementsByName('hidden_iframe')[0];
-    if (iframe) {
-      iframe.onload = () => {
-        filteredData[i]._submitted = true;
-        renderTable(filteredData);
-        closeModal();
-      };
+    function fillSelect(id, options) {
+      const select = document.getElementById(id);
+      options.sort().forEach(opt => {
+        const option = document.createElement("option");
+        option.value = opt;
+        option.text = opt;
+        select.appendChild(option);
+      });
     }
 
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
-  }
-
-  window.onload = () => {
-    const today = new Date().toISOString().split('T')[0];
-    const lastWeek = new Date();
-    lastWeek.setDate(lastWeek.getDate() - 7);
-    document.getElementById('endDate').value = today;
-    document.getElementById('startDate').value = lastWeek.toISOString().split('T')[0];
-    loadAndFilterCSV();
-  };
-</script>
-
+    window.onload = () => {
+      Papa.parse(SHEET_URL, {
+        download: true,
+        header: true,
+        complete: function(results) {
+          data = results.data;
+          populateDropdowns(data);
+        }
+      });
+    };
+  </script>
 </body>
 </html>

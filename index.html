@@ -160,19 +160,42 @@ button:hover {
 
   <div class="container" id="review-section" style="display:none">
     <h2>Review Details</h2>
-    <div class="top-bar">
-      <div><strong>User:</strong> <span id="userName"></span></div>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+  <tr style="border-bottom: 1px solid #ccc;">
+    <th>User Name</th>
+    <th>Issue</th>
+    <th>Enterprise</th>
+    <th>Date</th>
+    <th>SKU ID</th>
+    <th>Image ID</th>
+  </tr>
+  <tr>
+    <td><span id="userName"></span></td>
+    <td><span id="issue"></span></td>
+    <td><span id="enterprise"></span></td>
+    <td><span id="date"></span></td>
+    <td><span id="sku"></span></td>
+    <td><span id="imageID"></span></td>
+  </tr>
+</table>
       <div><strong>Issue:</strong> <span id="issue"></span></div>
       <div><strong>Enterprise:</strong> <span id="enterprise"></span></div>
       <div><strong>Date:</strong> <span id="date"></span></div>
       <div><strong>SKU ID:</strong> <span id="sku"></span></div>
       <div><strong>Image ID:</strong> <span id="imageID"></span></div>
     </div>
-    <div class="images">
-      <img id="left" src="" alt="Input Image">
-      <img id="middle" src="" alt="AI Image">
-      <img id="right" src="" alt="Final Image">
-    </div>
+    <table style="width: 100%; border-collapse: collapse;">
+  <tr style="border-bottom: 1px solid #ccc;">
+    <th>Input</th>
+    <th>AI</th>
+    <th>Output</th>
+  </tr>
+  <tr>
+    <td><img id="left" src="" alt="Input Image" style="width: 100%; max-height: 300px; object-fit: contain;" /></td>
+    <td><img id="middle" src="" alt="AI Image" style="width: 100%; max-height: 300px; object-fit: contain;" /></td>
+    <td><img id="right" src="" alt="Final Image" style="width: 100%; max-height: 300px; object-fit: contain;" /></td>
+  </tr>
+</table>
     <div class="form-section">
       <div style="flex: 1;">
         <label for="qcComment">QC Comment</label>

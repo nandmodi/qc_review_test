@@ -255,7 +255,7 @@ function showReview() {
   document.getElementById('left').src = row["left_path"];
   document.getElementById('middle').src = row["middle_path"];
   document.getElementById('right').src = row["right_path"];
-  document.getElementById('qcComment').value = row["issue"] || "";
+  document.getElementById('qcComment').value = "";
 }
 
 function submitAndNext() {
@@ -274,7 +274,7 @@ function submitAndNext() {
     "entry.772576827": row["middle_path"] || "",
     "entry.780536997": row["right_path"] || "",
     "entry.865196657": loginUser,
-    "entry.778698303": comment
+    "entry.778698303": comment || "Ok"
   });
 
   fetch(`${url}?${params.toString()}`, { method: 'POST', mode: 'no-cors' });

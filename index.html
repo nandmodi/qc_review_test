@@ -128,11 +128,17 @@
       const enterprise = document.getElementById('enterpriseFilter').value.trim().toLowerCase();
       const qcUser = document.getElementById('qcUserFilter').value.trim().toLowerCase();
 
-      filteredData = data.filter(row =>
-        (!date || (row["date"] || '').trim() === date) &&
-        (!enterprise || (row["Enterprise"] || '').trim().toLowerCase() === enterprise) &&
-        (!qcUser || (row["User"] || '').trim().toLowerCase() === qcUser)
-      );
+      filteredData = data.filter(row => {
+        const rowDate = (row["date"] || '').trim();
+        const rowEnterprise = (row["Enterprise"] || '').trim().toLowerCase();
+        const rowUser = (row["User"] || '').trim().toLowerCase();
+
+        return (
+          (!date || rowDate === date) ||
+          (!enterprise || rowEnterprise === enterprise) ||
+          (!qcUser || rowUser === qcUser)
+        );
+      });
 
       if (filteredData.length > 0) {
         currentIndex = 0;

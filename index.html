@@ -171,15 +171,14 @@
 
       const url = new URL("https://docs.google.com/forms/d/e/1FAIpQLSdrjhynjWITfOqHpkgKX8enCmDKg1b3s0Ij05Cux36kPmZEUA/formResponse");
       const params = new URLSearchParams({
-        "entry.890284089": row["Enterprise"] || "",
-        "entry.5932044": row["User"] || "",
+        "entry.890284089": row["enterprise"] || "",
+        "entry.5932044": row["user"] || "",
         "entry.1139236247": row["t1.sku_id"] || "",
         "entry.661750446": row["t1.image_id"] || "",
-        "entry.1317530325": row["Issue"] || "",
+        "entry.1317530325": row["issue"] || "",
         "entry.1455673211": row["left_path"] || "",
         "entry.772576827": row["middle_path"] || "",
         "entry.780536997": row["right_path"] || "",
-        "entry.778698303": "done",
         "entry.865196657": loginUser,
         "entry.2030939984": comment
       });

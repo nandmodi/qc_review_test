@@ -130,8 +130,8 @@
 
       filteredData = data.filter(row => {
         const rowDate = (row["date"] || '').trim();
-        const rowEnterprise = (row["Enterprise"] || '').trim().toLowerCase();
-        const rowUser = (row["User"] || '').trim().toLowerCase();
+        const rowEnterprise = (row["enterprise"] || '').trim().toLowerCase();
+        const rowUser = (row["user"] || '').trim().toLowerCase();
 
         return (
           (!date || rowDate === date) &&
@@ -152,60 +152,46 @@
 
     function showReview() {
       const row = filteredData[currentIndex];
-      document.getElementById('userName').textContent = row["User"];
-      document.getElementById('issue').textContent = row["Issue"];
-      document.getElementById('enterprise').textContent = row["Enterprise"];
+      document.getElementById('userName').textContent = row["user"];
+      document.getElementById('issue').textContent = row["issue"];
+      document.getElementById('enterprise').textContent = row["enterprise"];
       document.getElementById('date').textContent = row["date"];
       document.getElementById('sku').textContent = row["t1.sku_id"];
       document.getElementById('imageID').textContent = row["t1.image_id"];
       document.getElementById('left').src = row["left_path"];
       document.getElementById('middle').src = row["middle_path"];
       document.getElementById('right').src = row["right_path"];
-      document.getElementById('qcComment').value = row["Issue"] || "";
+      document.getElementById('qcComment').value = row["issue"] || "";
     }
 
     function submitAndNext() {
-  const row = filteredData[currentIndex];
-  const loginUser = document.getElementById('loginID').value || "";
-  const comment = document.getElementById('qcComment').value || "";
+      const row = filteredData[currentIndex];
+      const loginUser = document.getElementById('loginID').value || "";
+      const comment = document.getElementById('qcComment').value || "";
 
-  const url = new URL("https://docs.google.com/forms/d/e/1FAIpQLSdrjhynjWITfOqHpkgKX8enCmDKg1b3s0Ij05Cux36kPmZEUA/formResponse");
-  const params = new URLSearchParams({
-    "entry.890284089": row["Enterprise"] || "",
-    "entry.5932044": row["User"] || "",
-    "entry.1139236247": row["t1.sku_id"] || "",
-    "entry.661750446": row["t1.image_id"] || "",
-    "entry.1317530325": row["Issue"] || "",
-    "entry.1455673211": row["left_path"] || "",
-    "entry.772576827": row["middle_path"] || "",
-    "entry.780536997": row["right_path"] || "",
-    "entry.778698303": "done",
-    "entry.865196657": loginUser,
-    "entry.2030939984": comment
-  });
+      const url = new URL("https://docs.google.com/forms/d/e/1FAIpQLSdrjhynjWITfOqHpkgKX8enCmDKg1b3s0Ij05Cux36kPmZEUA/formResponse");
+      const params = new URLSearchParams({
+        "entry.890284089": row["Enterprise"] || "",
+        "entry.5932044": row["User"] || "",
+        "entry.1139236247": row["t1.sku_id"] || "",
+        "entry.661750446": row["t1.image_id"] || "",
+        "entry.1317530325": row["Issue"] || "",
+        "entry.1455673211": row["left_path"] || "",
+        "entry.772576827": row["middle_path"] || "",
+        "entry.780536997": row["right_path"] || "",
+        "entry.778698303": "done",
+        "entry.865196657": loginUser,
+        "entry.2030939984": comment
+      });
 
-  fetch(`${url}?${params.toString()}`, { method: 'POST', mode: 'no-cors' });
+      fetch(`${url}?${params.toString()}`, { method: 'POST', mode: 'no-cors' });
 
-  if (currentIndex < filteredData.length - 1) {
-    currentIndex++;
-    showReview();
-  } else {
-    alert("All entries reviewed.");
-  }
-}&email=${encodeURIComponent(email)}`;
-
-      fetch(url, { method: 'GET' })
-        .then(() => {
-          if (currentIndex < filteredData.length - 1) {
-            currentIndex++;
-            showReview();
-          } else {
-            alert("All entries reviewed.");
-          }
-        })
-        .catch(() => {
-          alert("Error submitting form");
-        });
+      if (currentIndex < filteredData.length - 1) {
+        currentIndex++;
+        showReview();
+      } else {
+        alert("All entries reviewed.");
+      }
     }
 
     function prevEntry() {
@@ -224,8 +210,8 @@
       const dates = new Set(), enterprises = new Set(), users = new Set();
       data.forEach(row => {
         if (row["date"]) dates.add(row["date"]);
-        if (row["Enterprise"]) enterprises.add(row["Enterprise"]);
-        if (row["User"]) users.add(row["User"]);
+        if (row["enterprise"]) enterprises.add(row["enterprise"]);
+        if (row["user"]) users.add(row["user"]);
       });
       fillSelect("dateFilter", [...dates]);
       fillSelect("enterpriseFilter", [...enterprises]);
@@ -243,12 +229,24 @@
     }
 
     window.onload = () => {
-      Papa.parse(SHEET_URL, {
+  Papa.parse(SHEET_URL, {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-          data = results.data.filter(row => Object.values(row).some(cell => cell));
+          const raw = results.data;
+          if (!raw || raw.length === 0) {
+            alert("No data found from sheet.");
+            return;
+          }
+          data = raw.map(row => {
+            const normalized = {};
+            for (let key in row) {
+              normalized[key.trim().toLowerCase()] = row[key];
+            }
+            return normalized;
+          });
+          console.log("Parsed Data:", data);
           populateDropdowns(data);
         }
       });

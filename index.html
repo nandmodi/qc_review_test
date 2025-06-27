@@ -170,6 +170,20 @@
   const email = document.getElementById('loginID').value || "";
 
   const url = `https://script.google.com/macros/s/AKfycbxXqg-4xzE0_0KXAMiLl0aHZkxOjKbqLto8jfpRgK1XoCIkF1ONkIHRWMiOXc7rj1z3/exec?comment=${encodeURIComponent(comment)}&email=${encodeURIComponent(email)}`;
+
+  fetch(url, { method: 'GET' })
+    .then(() => {
+      if (currentIndex < filteredData.length - 1) {
+        currentIndex++;
+        showReview();
+      } else {
+        alert("All entries reviewed.");
+      }
+    })
+    .catch(() => {
+      alert("Error submitting form");
+    });
+}&email=${encodeURIComponent(email)}`;
   fetch(url, { method: 'GET' });
 
   if (currentIndex < filteredData.length - 1) {

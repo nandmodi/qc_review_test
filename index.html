@@ -24,10 +24,15 @@
     label {
       font-weight: bold;
     }
-    select, input {
+    select, input, textarea {
       padding: 8px;
       margin: 5px;
       width: 200px;
+    }
+    textarea {
+      width: 100%;
+      height: 80px;
+      resize: vertical;
     }
     .images {
       display: flex;
@@ -44,17 +49,20 @@
       justify-content: space-between;
       align-items: center;
     }
-    .nav-buttons button, .submit-form a {
+    .nav-buttons button {
       padding: 10px 20px;
       margin: 10px;
       background: #007BFF;
       color: white;
       border: none;
-      text-decoration: none;
       cursor: pointer;
     }
-    .submit-form a {
+    .submit-form button {
+      padding: 10px 20px;
       background: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
     }
     .top-bar {
       display: flex;
@@ -102,9 +110,12 @@
       <img id="right" src="" alt="right_path">
     </div>
     <div class="form-section">
-      <div>
-        <strong>QC Comment:</strong>
-        <a id="prefillForm" target="_blank">Submit QC Comment</a>
+      <div style="flex: 1; margin-right: 20px;">
+        <label for="qcComment"><strong>QC Comment:</strong></label>
+        <textarea id="qcComment" placeholder="Write your comment here..."></textarea>
+      </div>
+      <div class="submit-form">
+        <button onclick="submitFormWithComment()">Submit QC Comment</button>
       </div>
       <div class="nav-buttons">
         <button onclick="prevEntry()">Previous</button>
@@ -161,10 +172,14 @@
       document.getElementById('left').src = row["left_path"];
       document.getElementById('middle').src = row["middle_path"];
       document.getElementById('right').src = row["right_path"];
+      document.getElementById('qcComment').value = row["Issue"] || "";
+    }
 
-      const comment = encodeURIComponent(row["Issue"] || "");
-      const email = encodeURIComponent(row["User"] || "");
-      document.getElementById('prefillForm').href = `${FORM_PREFILL}&entry.1273558996=${comment}&entry.923745551=${email}`;
+    function submitFormWithComment() {
+      const comment = encodeURIComponent(document.getElementById('qcComment').value || "");
+      const email = encodeURIComponent(document.getElementById('userName').textContent || "");
+      const url = `${FORM_PREFILL}&entry.1273558996=${comment}&entry.923745551=${email}`;
+      window.open(url, '_blank');
     }
 
     function prevEntry() {

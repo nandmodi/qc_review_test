@@ -123,15 +123,15 @@
     let currentIndex = 0;
 
     function loadFilteredData() {
-      const loginID = document.getElementById('loginID').value;
-      const date = document.getElementById('dateFilter').value;
-      const enterprise = document.getElementById('enterpriseFilter').value;
-      const qcUser = document.getElementById('qcUserFilter').value;
+      const loginID = document.getElementById('loginID').value.trim().toLowerCase();
+      const date = document.getElementById('dateFilter').value.trim();
+      const enterprise = document.getElementById('enterpriseFilter').value.trim().toLowerCase();
+      const qcUser = document.getElementById('qcUserFilter').value.trim().toLowerCase();
 
       filteredData = data.filter(row =>
-        (!date || row["date"] === date) &&
-        (!enterprise || row["Enterprise"] === enterprise) &&
-        (!qcUser || row["User"] === qcUser)
+        (!date || (row["date"] || '').trim() === date) &&
+        (!enterprise || (row["Enterprise"] || '').trim().toLowerCase() === enterprise) &&
+        (!qcUser || (row["User"] || '').trim().toLowerCase() === qcUser)
       );
 
       if (filteredData.length > 0) {

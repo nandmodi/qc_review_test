@@ -129,9 +129,9 @@
       const qcUser = document.getElementById('qcUserFilter').value;
 
       filteredData = data.filter(row =>
-        (!date || row["Date"] === date) &&
+        (!date || row["date"] === date) &&
         (!enterprise || row["Enterprise"] === enterprise) &&
-        (!qcUser || row["Qc-User"] === qcUser)
+        (!qcUser || row["User"] === qcUser)
       );
 
       if (filteredData.length > 0) {
@@ -146,18 +146,18 @@
 
     function showReview() {
       const row = filteredData[currentIndex];
-      document.getElementById('userName').textContent = row["User Name"];
+      document.getElementById('userName').textContent = row["User"];
       document.getElementById('issue').textContent = row["Issue"];
       document.getElementById('enterprise').textContent = row["Enterprise"];
-      document.getElementById('date').textContent = row["Date"];
-      document.getElementById('sku').textContent = row["Sku ID"];
-      document.getElementById('imageID').textContent = row["Image ID"];
+      document.getElementById('date').textContent = row["date"];
+      document.getElementById('sku').textContent = row["t1.sku_id"];
+      document.getElementById('imageID').textContent = row["t1.image_id"];
       document.getElementById('left').src = row["left_path"];
       document.getElementById('middle').src = row["middle_path"];
       document.getElementById('right').src = row["right_path"];
 
       const comment = encodeURIComponent(row["Issue"] || "");
-      const email = encodeURIComponent(row["Qc-User"] || "");
+      const email = encodeURIComponent(row["User"] || "");
       document.getElementById('prefillForm').href = `${FORM_PREFILL}&entry.1273558996=${comment}&entry.923745551=${email}`;
     }
 
@@ -183,9 +183,9 @@
     function populateDropdowns(data) {
       const dates = new Set(), enterprises = new Set(), users = new Set();
       data.forEach(row => {
-        if (row["Date"]) dates.add(row["Date"]);
+        if (row["date"]) dates.add(row["date"]);
         if (row["Enterprise"]) enterprises.add(row["Enterprise"]);
-        if (row["Qc-User"]) users.add(row["Qc-User"]);
+        if (row["User"]) users.add(row["User"]);
       });
       fillSelect("dateFilter", [...dates]);
       fillSelect("enterpriseFilter", [...enterprises]);

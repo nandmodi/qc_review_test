@@ -116,8 +116,7 @@
   </div>
 
   <script>
-    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSvZvX_emLq4BOJ4X4OfNeOV8V92L83kU5wbIgXK4o6hc7JRnoqeg9Wwv3Cd2FCa1dBdT-Z0kf7tNXZ/pub?gid=0&single=true&output=csv";
-    const FORM_PREFILL = "https://docs.google.com/forms/d/e/1FAIpQLSfef8RvJUeIyG3lHDeohpfuHI8Q2gagMvtBfIIdCLmg_5VfnA/viewform?usp=pp_url";
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWW7muoNyeY_1VOLhybuT7ChNHtkhAscxDikyiCPQChIWqi1m3KXsd9e0_i_UFE7bDrW_7kfH-vIhL/pub?gid=0&single=true&output=csv";
 
     let data = [];
     let filteredData = [];
@@ -166,44 +165,26 @@
     }
 
     function submitAndNext() {
+  const row = filteredData[currentIndex];
+  const loginUser = document.getElementById('loginID').value || "";
   const comment = document.getElementById('qcComment').value || "";
-  const email = document.getElementById('loginID').value || "";
 
-  const url = `https://script.google.com/macros/s/AKfycbxXqg-4xzE0_0KXAMiLl0aHZkxOjKbqLto8jfpRgK1XoCIkF1ONkIHRWMiOXc7rj1z3/exec?comment=${encodeURIComponent(comment)}&email=${encodeURIComponent(email)}`;
-
-  fetch(url, { method: 'GET' })
-    .then(() => {
-      if (currentIndex < filteredData.length - 1) {
-        currentIndex++;
-        showReview();
-      } else {
-        alert("All entries reviewed.");
-      }
-    })
-    .catch(() => {
-      alert("Error submitting form");
-    });
-}&email=${encodeURIComponent(email)}`;
-  fetch(url, { method: 'GET' });
-
-  if (currentIndex < filteredData.length - 1) {
-    currentIndex++;
-    showReview();
-  } else {
-    alert("All entries reviewed.");
-  }
-}).then(() => {
-    if (currentIndex < filteredData.length - 1) {
-      currentIndex++;
-      showReview();
-    } else {
-      alert("All entries reviewed.");
-    }
-  }).catch(() => {
-    alert("Error submitting form");
+  const url = new URL("https://docs.google.com/forms/d/e/1FAIpQLSdrjhynjWITfOqHpkgKX8enCmDKg1b3s0Ij05Cux36kPmZEUA/formResponse");
+  const params = new URLSearchParams({
+    "entry.890284089": row["Enterprise"] || "",
+    "entry.5932044": row["User"] || "",
+    "entry.1139236247": row["t1.sku_id"] || "",
+    "entry.661750446": row["t1.image_id"] || "",
+    "entry.1317530325": row["Issue"] || "",
+    "entry.1455673211": row["left_path"] || "",
+    "entry.772576827": row["middle_path"] || "",
+    "entry.780536997": row["right_path"] || "",
+    "entry.778698303": "done",
+    "entry.865196657": loginUser,
+    "entry.2030939984": comment
   });
-}&entry.1273558996=${comment}&entry.923745551=${email}`;
-  window.open(url, '_blank');
+
+  fetch(`${url}?${params.toString()}`, { method: 'POST', mode: 'no-cors' });
 
   if (currentIndex < filteredData.length - 1) {
     currentIndex++;
@@ -211,15 +192,20 @@
   } else {
     alert("All entries reviewed.");
   }
-}&entry.1273558996=${comment}&entry.923745551=${email}`;
-      window.open(url, '_blank');
+}&email=${encodeURIComponent(email)}`;
 
-      if (currentIndex < filteredData.length - 1) {
-        currentIndex++;
-        showReview();
-      } else {
-        alert("All entries reviewed.");
-      }
+      fetch(url, { method: 'GET' })
+        .then(() => {
+          if (currentIndex < filteredData.length - 1) {
+            currentIndex++;
+            showReview();
+          } else {
+            alert("All entries reviewed.");
+          }
+        })
+        .catch(() => {
+          alert("Error submitting form");
+        });
     }
 
     function prevEntry() {
@@ -260,8 +246,9 @@
       Papa.parse(SHEET_URL, {
         download: true,
         header: true,
+        skipEmptyLines: true,
         complete: function(results) {
-          data = results.data;
+          data = results.data.filter(row => Object.values(row).some(cell => cell));
           populateDropdowns(data);
         }
       });
